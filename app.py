@@ -2,7 +2,6 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# Configuration de l'interface
 st.set_page_config(page_title="e-com Family Tool by Labo", layout="wide")
 
 st.markdown("""
@@ -16,7 +15,6 @@ st.markdown("""
 
 st.title("🛡️ e-com Family Tool by Labo")
 
-# Clé API
 st.sidebar.title("Configuration")
 api_key = st.sidebar.text_input("Entre ta clé API ici :", type="password")
 
@@ -30,33 +28,35 @@ with col1:
 with col2:
     if purchase_price > 0:
         st.info(f"💰 **Vendre entre : {purchase_price + 8000:,} et {purchase_price + 12000:,} FCFA**")
-        st.write("📊 **Budget Pub :** 4$ à 7$ / jour (Focus sur 1 seule créative).")
 
 if st.button("LANCER L'ANALYSE NEURO-MARKETING") and uploaded_file and api_key:
     try:
         genai.configure(api_key=api_key)
         
-        # ON UTILISE LE NOM DE MODÈLE LE PLUS STABLE
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        # --- LOGIQUE D'AUTO-DÉTECTION ---
+        # On essaie les noms les plus courants un par un
+        models_to_try = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro', 'gemini-pro-vision']
+        model = None
         
-        img = Image.open(uploaded_file)
+        for model_name in models_to_try:
+            try:
+                test_model = genai.GenerativeModel(model_name)
+                # Si on arrive ici sans erreur, c'est que le nom est bon !
+                model = test_model
+                break
+            except:
+                continue
         
-        prompt = f"""
-        Analyse ce produit e-commerce : {product_name}.
-        En tant qu'expert en neuro-marketing :
-        1. Score de potentiel /10.
-        2. Liste les frustrations et peurs des clients.
-        3. Rédige 5 paragraphes de vente Shopify (émotionnel).
-        4. 3 titres 'Stop-Scroll'.
-        5. Texte pub Facebook + Script Voix-Off (Problème-Solution-CTA).
-        Ton ton doit être humain et percutant.
-        """
-        
-        with st.spinner('Connexion sécurisée à Labo AI...'):
-            response = model.generate_content([prompt, img])
-            st.markdown("---")
-            st.markdown(response.text)
+        if model is None:
+            st.error("Aucun modèle trouvé. Essaie de créer une NOUVELLE clé API sur Google AI Studio.")
+        else:
+            img = Image.open(uploaded_file)
+            prompt = f"Analyse ce produit : {product_name}. Rédige un score /10, 5 paragraphes de vente neuro-marketing, 3 titres chocs, et un script voix-off (Problème-Solution-CTA)."
             
+            with st.spinner(f'Analyse en cours avec le moteur {model_name}...'):
+                response = model.generate_content([prompt, img])
+                st.markdown("---")
+                st.markdown(response.text)
+                
     except Exception as e:
-        st.error(f"Détail : {e}")
-        st.info("Conseil : Vérifie que ta clé API ne contient pas d'espace au début ou à la fin quand tu la colles.")
+        st.error(f"Erreur : {e}")
