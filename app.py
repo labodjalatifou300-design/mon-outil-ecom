@@ -1,9 +1,9 @@
 import streamlit as st
-import google.generativeai as genai
-from PIL import Image
 import io
 import re
 import json
+from PIL import Image
+import base64
 
 st.set_page_config(
     page_title="EcoMaster Labo Pro",
@@ -88,11 +88,16 @@ st.markdown("""
     border-radius: 4px; margin-bottom: 0.4rem;
     text-transform: uppercase; letter-spacing: 1px;
   }
+  .ai-selector {
+    background: #1A1A1A; border: 2px solid #D90429;
+    border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
+  }
   #MainMenu, footer, header { visibility: hidden; }
   label { color: #CCCCCC !important; font-weight: 600 !important; }
 </style>
 """, unsafe_allow_html=True)
 
+# HERO
 st.markdown("""
 <div class="hero-banner">
   <h1>🚀 <span>EcoMaster</span> Labo Pro</h1>
@@ -100,23 +105,46 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div style="background:#1A0000; border:2px solid #D90429; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem;">
-  <p style="color:#D90429; font-weight:700; margin:0 0 0.3rem;">🔑 Entre ta clé API Google Gemini ici</p>
-  <p style="color:#999; font-size:0.8rem; margin:0;">Obtiens-la gratuitement sur 
-    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#D90429;">aistudio.google.com</a>
-  </p>
-</div>
-""", unsafe_allow_html=True)
+# CHOIX IA
+st.markdown('<div class="ai-selector">', unsafe_allow_html=True)
+st.markdown("### 🤖 Choisis ton moteur IA")
+ai_choice = st.radio(
+    "Moteur IA",
+    ["🟢 Google Gemini (gratuit)", "🔵 OpenAI GPT-4o (payant ~0.02$/analyse)"],
+    horizontal=True,
+    label_visibility="collapsed"
+)
+st.markdown('</div>', unsafe_allow_html=True)
 
-api_key = st.text_input("🔑 Clé API Google Gemini", type="password", placeholder="Colle ta clé ici : AIzaSy...")
+# CLÉ API
+if "Gemini" in ai_choice:
+    st.markdown("""
+    <div style="background:#1A0000; border:2px solid #D90429; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem;">
+      <p style="color:#D90429; font-weight:700; margin:0 0 0.3rem;">🔑 Clé API Google Gemini</p>
+      <p style="color:#999; font-size:0.8rem; margin:0;">Obtiens-la sur 
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#D90429;">aistudio.google.com</a>
+        — Crée un nouveau projet si quota épuisé
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+    api_key = st.text_input("🔑 Clé API Google Gemini", type="password", placeholder="AIzaSy...")
+else:
+    st.markdown("""
+    <div style="background:#001a2d; border:2px solid #0066cc; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem;">
+      <p style="color:#4da6ff; font-weight:700; margin:0 0 0.3rem;">🔑 Clé API OpenAI</p>
+      <p style="color:#999; font-size:0.8rem; margin:0;">Obtiens-la sur 
+        <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#4da6ff;">platform.openai.com</a>
+        — 5$ de crédit gratuit à l'inscription (~250 analyses)
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+    api_key = st.text_input("🔑 Clé API OpenAI", type="password", placeholder="sk-...")
 
+# INPUTS
 col1, col2 = st.columns([3, 2], gap="large")
-
 with col1:
     product_name = st.text_input("📦 Nom du Produit", placeholder="Ex: Pince Multifonction")
     purchase_price = st.number_input("💰 Prix d'Achat (FCFA)", min_value=0, step=500, value=5000)
-
 with col2:
     uploaded_files = st.file_uploader(
         "📸 Photos du Produit (1 à 3)",
@@ -129,9 +157,9 @@ with col2:
             with cols[i]:
                 st.image(f, use_column_width=True)
 
+# PRIX
 price_min = purchase_price + 8000
 price_max = purchase_price + 12000
-
 st.markdown("<br>", unsafe_allow_html=True)
 pcol1, pcol2, pcol3 = st.columns(3, gap="medium")
 with pcol1:
@@ -153,10 +181,10 @@ with pcol3:
 st.markdown("<br>", unsafe_allow_html=True)
 analyze_clicked = st.button("⚡ LANCER L'ANALYSE IA COMPLÈTE", use_container_width=True)
 
+# PROMPT
 def build_prompt(name, prix_achat, prix_min, prix_max):
-    return f"""
-Tu es un expert en neuro-marketing et e-commerce pour le marché africain francophone.
-Analyse le produit sur les images.
+    return f"""Tu es un expert en neuro-marketing et e-commerce pour le marché africain francophone.
+Analyse ce produit.
 
 PRODUIT : {name}
 PRIX D'ACHAT : {prix_achat} FCFA
@@ -187,10 +215,11 @@ Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après, sans balise
     "preuve": "texte",
     "cta": "texte"
   }}
-}}
-"""
+}}"""
 
+# GEMINI
 def call_gemini(key, prompt, images):
+    import google.generativeai as genai
     genai.configure(api_key=key)
     model = genai.GenerativeModel("gemini-2.0-flash")
     parts = []
@@ -204,9 +233,32 @@ def call_gemini(key, prompt, images):
     raw = re.sub(r"\s*```$", "", raw)
     return json.loads(raw)
 
+# OPENAI
+def call_openai(key, prompt, images):
+    from openai import OpenAI
+    client = OpenAI(api_key=key)
+    content = []
+    for img_data in images:
+        b64 = base64.b64encode(img_data).decode("utf-8")
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
+        })
+    content.append({"type": "text", "text": prompt})
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": content}],
+        max_tokens=2000,
+    )
+    raw = response.choices[0].message.content.strip()
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    return json.loads(raw)
+
+# ANALYSE
 if analyze_clicked:
     if not api_key:
-        st.error("⚠️ Entre ta clé API Google Gemini en haut de la page !")
+        st.error("⚠️ Entre ta clé API en haut de la page !")
     elif not product_name.strip():
         st.error("⚠️ Entre le nom du produit.")
     elif not uploaded_files:
@@ -216,13 +268,17 @@ if analyze_clicked:
         prompt = build_prompt(product_name, purchase_price, price_min, price_max)
         with st.spinner("🧠 Analyse IA en cours... patiente 15-20 secondes ⏳"):
             try:
-                data = call_gemini(api_key, prompt, images_bytes)
+                if "Gemini" in ai_choice:
+                    data = call_gemini(api_key, prompt, images_bytes)
+                else:
+                    data = call_openai(api_key, prompt, images_bytes)
                 st.session_state["result"] = data
                 st.session_state["analyzed"] = True
             except Exception as e:
                 st.error(f"❌ Erreur : {e}")
                 st.session_state["analyzed"] = False
 
+# RÉSULTATS
 if st.session_state.get("analyzed") and "result" in st.session_state:
     data = st.session_state["result"]
     st.markdown("---")
@@ -326,3 +382,13 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
             file_name=f"script_{product_name.replace(' ','_')}.txt",
             mime="text/plain",
         )
+```
+
+---
+
+Et le `requirements.txt` aussi à mettre à jour :
+```
+streamlit>=1.35.0
+google-generativeai>=0.7.0
+openai>=1.30.0
+Pillow>=10.0.0
