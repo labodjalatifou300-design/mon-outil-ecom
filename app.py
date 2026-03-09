@@ -5,7 +5,6 @@ from PIL import Image
 # Configuration de l'interface
 st.set_page_config(page_title="e-com Family Tool by Labo", layout="wide")
 
-# Style épuré Noir et Rouge
 st.markdown("""
     <style>
     .main { background-color: #0e1117; color: white; }
@@ -17,7 +16,7 @@ st.markdown("""
 
 st.title("🛡️ e-com Family Tool by Labo")
 
-# Clé API dans la barre latérale
+# Clé API
 st.sidebar.title("Configuration")
 api_key = st.sidebar.text_input("Entre ta clé API ici :", type="password")
 
@@ -31,32 +30,33 @@ with col1:
 with col2:
     if purchase_price > 0:
         st.info(f"💰 **Vendre entre : {purchase_price + 8000:,} et {purchase_price + 12000:,} FCFA**")
-        st.write("📊 **Budget Pub :** 4$ à 7$ / jour (1 seule créative).")
+        st.write("📊 **Budget Pub :** 4$ à 7$ / jour (Focus sur 1 seule créative).")
 
 if st.button("LANCER L'ANALYSE NEURO-MARKETING") and uploaded_file and api_key:
     try:
         genai.configure(api_key=api_key)
-        # On utilise le modèle le plus compatible : gemini-1.5-flash
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # ON UTILISE LE NOM DE MODÈLE LE PLUS STABLE
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        
         img = Image.open(uploaded_file)
         
-        # Un prompt direct qui utilise l'intelligence pure de l'IA sans recherche externe
         prompt = f"""
-        Analyse cette image. C'est un produit e-commerce nommé : {product_name}.
-        En utilisant tes connaissances en neuro-marketing :
-        1. Donne un score de potentiel /10.
-        2. Liste 5 avantages majeurs basés sur l'émotion.
-        3. Rédige 3 titres 'Stop-Scroll'.
-        4. Rédige un texte publicitaire Facebook avec emojis.
-        5. Propose un script voix-off court (Problème > Solution > CTA).
-        Parle comme un expert copywriter humain, direct et percutant.
+        Analyse ce produit e-commerce : {product_name}.
+        En tant qu'expert en neuro-marketing :
+        1. Score de potentiel /10.
+        2. Liste les frustrations et peurs des clients.
+        3. Rédige 5 paragraphes de vente Shopify (émotionnel).
+        4. 3 titres 'Stop-Scroll'.
+        5. Texte pub Facebook + Script Voix-Off (Problème-Solution-CTA).
+        Ton ton doit être humain et percutant.
         """
         
-        with st.spinner('Analyse en cours...'):
+        with st.spinner('Connexion sécurisée à Labo AI...'):
             response = model.generate_content([prompt, img])
             st.markdown("---")
             st.markdown(response.text)
             
     except Exception as e:
-        # On affiche la vraie erreur pour comprendre ce qui bloque
-        st.error(f"Détail de l'erreur : {e}")
+        st.error(f"Détail : {e}")
+        st.info("Conseil : Vérifie que ta clé API ne contient pas d'espace au début ou à la fin quand tu la colles.")
