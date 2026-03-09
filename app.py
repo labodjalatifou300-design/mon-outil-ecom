@@ -5,14 +5,12 @@ import io
 import re
 import json
 
-# ─── PAGE CONFIG ────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="EcoMaster Labo Pro",
     page_icon="🚀",
     layout="wide",
 )
 
-# ─── CUSTOM CSS ─────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
@@ -34,24 +32,15 @@ st.markdown("""
     background-color: #1E1E1E !important; color: #FFFFFF !important;
     border: 1px solid #3A3A3A !important; border-radius: 8px !important;
   }
-  .stTextInput input:focus, .stNumberInput input:focus {
-    border-color: #D90429 !important;
-    box-shadow: 0 0 0 2px rgba(217,4,41,0.25) !important;
-  }
   .stButton > button {
     background: linear-gradient(135deg, #D90429, #a80220) !important;
     color: white !important; border: none !important;
     border-radius: 10px !important; font-weight: 700 !important;
     font-size: 1.05rem !important; padding: 0.65rem 2rem !important;
-    transition: all 0.2s ease !important; width: 100%;
-  }
-  .stButton > button:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(217,4,41,0.4) !important;
+    width: 100%;
   }
   .stTabs [data-baseweb="tab-list"] {
-    background: #1A1A1A; border-radius: 10px; padding: 4px;
-    gap: 4px; border: 1px solid #2A2A2A;
+    background: #1A1A1A; border-radius: 10px; padding: 4px; gap: 4px;
   }
   .stTabs [data-baseweb="tab"] {
     background: transparent !important; color: #888 !important;
@@ -78,7 +67,7 @@ st.markdown("""
   .price-box {
     background: linear-gradient(135deg, #1a0000, #2a0a0a);
     border: 1px solid #D90429; border-radius: 12px;
-    padding: 1.25rem; text-align: center;
+    padding: 1.25rem; text-align: center; margin-bottom: 1rem;
   }
   .price-box .label { color: #999; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
   .price-box .value { color: #FFFFFF; font-size: 1.6rem; font-weight: 900; }
@@ -93,22 +82,17 @@ st.markdown("""
     background: #111; border: 1px solid #2A2A2A;
     border-radius: 10px; padding: 1.25rem; margin-bottom: 0.75rem;
   }
-  .script-block .tag {
+  .script-tag {
     display: inline-block; background: #D90429; color: white;
     font-size: 0.7rem; font-weight: 700; padding: 2px 8px;
     border-radius: 4px; margin-bottom: 0.4rem;
     text-transform: uppercase; letter-spacing: 1px;
   }
-  .api-box {
-    background: #1A0000; border: 2px solid #D90429;
-    border-radius: 12px; padding: 1rem 1.5rem; margin-bottom: 1.5rem;
-  }
   #MainMenu, footer, header { visibility: hidden; }
-  label { color: #CCCCCC !important; font-weight: 600 !important; font-size: 0.88rem !important; }
+  label { color: #CCCCCC !important; font-weight: 600 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# ─── HERO BANNER ────────────────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero-banner">
   <h1>🚀 <span>EcoMaster</span> Labo Pro</h1>
@@ -116,30 +100,21 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ─── CLÉ API — VISIBLE EN HAUT ──────────────────────────────────────────────────
 st.markdown("""
-<div class="api-box">
-  <p style="color:#D90429; font-weight:700; margin:0 0 0.3rem;">🔑 Étape 1 — Entre ta clé API Google Gemini</p>
-  <p style="color:#999; font-size:0.8rem; margin:0;">
-    Obtiens-la gratuitement sur 
-    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#D90429;">
-      aistudio.google.com
-    </a>
+<div style="background:#1A0000; border:2px solid #D90429; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem;">
+  <p style="color:#D90429; font-weight:700; margin:0 0 0.3rem;">🔑 Entre ta clé API Google Gemini ici</p>
+  <p style="color:#999; font-size:0.8rem; margin:0;">Obtiens-la gratuitement sur 
+    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#D90429;">aistudio.google.com</a>
   </p>
 </div>
 """, unsafe_allow_html=True)
 
-api_key = st.text_input(
-    "🔑 Clé API Google Gemini",
-    type="password",
-    placeholder="Colle ta clé ici : AIzaSy..."
-)
+api_key = st.text_input("🔑 Clé API Google Gemini", type="password", placeholder="Colle ta clé ici : AIzaSy...")
 
-# ─── INPUTS PRODUIT ─────────────────────────────────────────────────────────────
 col1, col2 = st.columns([3, 2], gap="large")
 
 with col1:
-    product_name = st.text_input("📦 Nom du Produit", placeholder="Ex: Sérum Vitamine C Anti-Tache")
+    product_name = st.text_input("📦 Nom du Produit", placeholder="Ex: Pince Multifonction")
     purchase_price = st.number_input("💰 Prix d'Achat (FCFA)", min_value=0, step=500, value=5000)
 
 with col2:
@@ -154,7 +129,6 @@ with col2:
             with cols[i]:
                 st.image(f, use_column_width=True)
 
-# ─── CALCULATEUR DE PRIX ────────────────────────────────────────────────────────
 price_min = purchase_price + 8000
 price_max = purchase_price + 12000
 
@@ -177,11 +151,8 @@ with pcol3:
     </div>""", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
-
-# ─── BOUTON ANALYSER ────────────────────────────────────────────────────────────
 analyze_clicked = st.button("⚡ LANCER L'ANALYSE IA COMPLÈTE", use_container_width=True)
 
-# ─── PROMPT ─────────────────────────────────────────────────────────────────────
 def build_prompt(name, prix_achat, prix_min, prix_max):
     return f"""
 Tu es un expert en neuro-marketing et e-commerce pour le marché africain francophone.
@@ -194,41 +165,34 @@ FOURCHETTE DE VENTE : {prix_min} – {prix_max} FCFA
 Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après, sans balises markdown :
 
 {{
-  "score": <nombre 1-10>,
-  "score_justification": "<2-3 phrases>",
-  "public_cible": "<description du client idéal>",
-  "peurs": ["<peur 1>", "<peur 2>", "<peur 3>"],
-  "desirs": ["<désir 1>", "<désir 2>", "<désir 3>"],
-  "budget_pub_usd": "<ex: 4$–7$ / jour>",
+  "score": 8,
+  "score_justification": "texte ici",
+  "public_cible": "texte ici",
+  "peurs": ["peur 1", "peur 2", "peur 3"],
+  "desirs": ["desir 1", "desir 2", "desir 3"],
+  "budget_pub_usd": "4$-7$ par jour",
   "shopify": {{
-    "titre": "<titre magnétique>",
-    "paragraphes": [
-      "<§1 accroche émotionnelle>",
-      "<§2 présentation solution>",
-      "<§3 bénéfices concrets>",
-      "<§4 preuve sociale>",
-      "<§5 urgence + CTA>"
-    ]
+    "titre": "titre ici",
+    "paragraphes": ["para 1", "para 2", "para 3", "para 4", "para 5"]
   }},
   "facebook_ads": [
-    {{"titre": "<titre choc 1>", "texte": "<texte pub avec emojis>"}},
-    {{"titre": "<titre choc 2>", "texte": "<texte pub avec emojis>"}},
-    {{"titre": "<titre choc 3>", "texte": "<texte pub avec emojis>"}}
+    {{"titre": "titre 1", "texte": "texte pub 1"}},
+    {{"titre": "titre 2", "texte": "texte pub 2"}},
+    {{"titre": "titre 3", "texte": "texte pub 3"}}
   ],
   "voix_off": {{
-    "accroche": "<1-2 phrases percutantes>",
-    "probleme": "<problème vécu par le client>",
-    "solution": "<comment le produit résout>",
-    "preuve": "<preuve sociale crédible>",
-    "cta": "<appel à l'action urgent>"
+    "accroche": "texte",
+    "probleme": "texte",
+    "solution": "texte",
+    "preuve": "texte",
+    "cta": "texte"
   }}
 }}
 """
 
-# ─── APPEL GEMINI ───────────────────────────────────────────────────────────────
 def call_gemini(key, prompt, images):
     genai.configure(api_key=key)
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     parts = []
     for img_data in images:
         img = Image.open(io.BytesIO(img_data))
@@ -240,7 +204,6 @@ def call_gemini(key, prompt, images):
     raw = re.sub(r"\s*```$", "", raw)
     return json.loads(raw)
 
-# ─── ANALYSE ────────────────────────────────────────────────────────────────────
 if analyze_clicked:
     if not api_key:
         st.error("⚠️ Entre ta clé API Google Gemini en haut de la page !")
@@ -251,7 +214,7 @@ if analyze_clicked:
     else:
         images_bytes = [f.read() for f in uploaded_files[:3]]
         prompt = build_prompt(product_name, purchase_price, price_min, price_max)
-        with st.spinner("🧠 Analyse IA en cours... (10-20 secondes)"):
+        with st.spinner("🧠 Analyse IA en cours... patiente 15-20 secondes ⏳"):
             try:
                 data = call_gemini(api_key, prompt, images_bytes)
                 st.session_state["result"] = data
@@ -260,7 +223,6 @@ if analyze_clicked:
                 st.error(f"❌ Erreur : {e}")
                 st.session_state["analyzed"] = False
 
-# ─── AFFICHAGE RÉSULTATS ─────────────────────────────────────────────────────────
 if st.session_state.get("analyzed") and "result" in st.session_state:
     data = st.session_state["result"]
     st.markdown("---")
@@ -272,7 +234,6 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
         "🎙️ Script Voix-Off"
     ])
 
-    # TAB 1
     with tab1:
         score = data.get("score", "?")
         c1, c2 = st.columns([1, 2], gap="large")
@@ -291,7 +252,7 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:1rem;">
           <div style="background:#1A1A1A; border:1px solid #2A2A2A; border-radius:10px; padding:0.75rem 1rem; flex:1; min-width:130px; text-align:center;">
             <div style="color:#666; font-size:0.72rem; text-transform:uppercase;">Budget Pub / Jour</div>
-            <div style="color:#D90429; font-size:1.2rem; font-weight:700;">{data.get("budget_pub_usd","4$–7$")}</div>
+            <div style="color:#D90429; font-size:1.2rem; font-weight:700;">{data.get("budget_pub_usd","4$-7$")}</div>
           </div>
           <div style="background:#1A1A1A; border:1px solid #2A2A2A; border-radius:10px; padding:0.75rem 1rem; flex:1; min-width:130px; text-align:center;">
             <div style="color:#666; font-size:0.72rem; text-transform:uppercase;">Marge Min</div>
@@ -321,7 +282,6 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
           <p style="line-height:1.7;">{data.get("public_cible","")}</p>
         </div>""", unsafe_allow_html=True)
 
-    # TAB 2
     with tab2:
         shopify = data.get("shopify", {})
         st.markdown(f"""<div class="result-card">
@@ -336,7 +296,6 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
               <p style="line-height:1.8;">{para}</p>
             </div>""", unsafe_allow_html=True)
 
-    # TAB 3
     with tab3:
         for i, ad in enumerate(data.get("facebook_ads", [])):
             st.markdown(f"""<div class="result-card">
@@ -345,7 +304,6 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
               <div class="ad-block">{ad.get("texte","")}</div>
             </div>""", unsafe_allow_html=True)
 
-    # TAB 4
     with tab4:
         vo = data.get("voix_off", {})
         sections = [
@@ -357,7 +315,7 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
         ]
         for label, content in sections:
             st.markdown(f"""<div class="script-block">
-              <div class="tag">{label}</div>
+              <div class="script-tag">{label}</div>
               <p style="line-height:1.8; color:#DDDDDD; margin:0;">{content}</p>
             </div>""", unsafe_allow_html=True)
 
