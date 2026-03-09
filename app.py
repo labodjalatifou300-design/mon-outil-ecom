@@ -383,12 +383,3 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
             mime="text/plain",
         )
 ```
-
----
-
-Et le `requirements.txt` aussi à mettre à jour :
-```
-streamlit>=1.35.0
-google-generativeai>=0.7.0
-openai>=1.30.0
-Pillow>=10.0.0
