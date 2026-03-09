@@ -28,17 +28,18 @@ st.markdown("""
     background: linear-gradient(135deg, #0e0000 0%, #1a0000 40%, #0e0000 100%);
     border: 1px solid #D90429; border-radius: 20px;
     padding: 2rem; margin-bottom: 1.5rem; text-align: center;
-    box-shadow: 0 0 50px rgba(217,4,41,0.12);
+    box-shadow: 0 0 50px rgba(217,4,41,0.15);
     animation: fadeInDown 0.6s ease;
   }
-  .hero-banner h1 { font-size: clamp(1.5rem, 5vw, 2.4rem); font-weight: 900; color: #FFFFFF; margin: 0; letter-spacing: -1px; }
+  .hero-banner h1 { font-size: clamp(1.6rem, 5vw, 2.6rem); font-weight: 900; color: #FFFFFF; margin: 0; letter-spacing: -1px; }
   .hero-banner h1 span { color: #D90429; }
-  .hero-banner p { color: #666; margin: 0.5rem 0 0; font-size: 0.88rem; letter-spacing: 1px; text-transform: uppercase; }
+  .hero-banner .slogan { color: #888; margin: 0.4rem 0 0; font-size: 0.9rem; letter-spacing: 2px; text-transform: uppercase; }
+  .hero-banner .sub { color: #D90429; font-size: 0.75rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-top: 0.2rem; }
 
   @keyframes fadeInDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
   @keyframes fadeInUp { from { opacity:0; transform:translateY(15px); } to { opacity:1; transform:translateY(0); } }
   @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(217,4,41,0.35); } 50% { box-shadow: 0 0 0 12px rgba(217,4,41,0); } }
-  @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(217,4,41,0.2); } 50% { box-shadow: 0 0 35px rgba(217,4,41,0.5); } }
+  @keyframes glow { 0%,100% { box-shadow: 0 0 20px rgba(217,4,41,0.2); } 50% { box-shadow: 0 0 40px rgba(217,4,41,0.6); } }
 
   .stTextInput input, .stNumberInput input {
     background-color: #161b22 !important; color: #FFFFFF !important;
@@ -65,8 +66,8 @@ st.markdown("""
   .stTabs [data-baseweb="tab"] {
     background: transparent !important; color: #666 !important;
     border-radius: 10px !important; font-weight: 600 !important;
-    font-size: clamp(0.65rem, 2vw, 0.82rem) !important;
-    padding: 0.4rem 0.6rem !important; transition: all 0.25s ease !important;
+    font-size: clamp(0.62rem, 2vw, 0.8rem) !important;
+    padding: 0.4rem 0.55rem !important; transition: all 0.25s ease !important;
   }
   .stTabs [aria-selected="true"] {
     background: linear-gradient(135deg, #D90429, #a80220) !important;
@@ -76,14 +77,24 @@ st.markdown("""
   .result-card {
     background: #161b22; border: 1px solid #2a3140; border-radius: 14px;
     padding: 1.4rem; margin-bottom: 1rem; animation: fadeInUp 0.4s ease;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   }
   .result-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(217,4,41,0.08); border-color: #3a2030; }
-  .result-card h3 {
-    color: #D90429; font-size: 0.82rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1.5px;
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2a3140;
   }
+  .card-header .card-title {
+    color: #D90429; font-size: 0.8rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1.5px; margin: 0;
+  }
+  .inline-copy {
+    background: transparent; border: 1px solid #2a3140; color: #555;
+    border-radius: 6px; padding: 3px 8px; font-size: 0.72rem; cursor: pointer;
+    transition: all 0.2s ease; font-family: Inter, sans-serif; white-space: nowrap;
+  }
+  .inline-copy:hover { border-color: #D90429; color: #D90429; background: #1a0000; }
 
   .score-wrap { text-align: center; padding: 1rem 0; }
   .score-badge {
@@ -93,104 +104,102 @@ st.markdown("""
     color: #FFFFFF; background: radial-gradient(circle, #2d0000, #0e1117);
     margin: 0 auto 0.75rem; animation: glow 2.5s infinite;
   }
-  .wow-badge { display: inline-block; background: linear-gradient(135deg, #ff5500, #D90429); color: white; font-weight: 800; font-size: 0.78rem; padding: 5px 16px; border-radius: 20px; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(217,4,41,0.4); }
-  .ps-badge { display: inline-block; background: linear-gradient(135deg, #0055bb, #003a8c); color: white; font-weight: 800; font-size: 0.78rem; padding: 5px 16px; border-radius: 20px; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0,85,187,0.4); }
+  .wow-badge { display:inline-block; background:linear-gradient(135deg,#ff5500,#D90429); color:white; font-weight:800; font-size:0.75rem; padding:4px 14px; border-radius:20px; letter-spacing:1.5px; text-transform:uppercase; }
+  .ps-badge { display:inline-block; background:linear-gradient(135deg,#0055bb,#003a8c); color:white; font-weight:800; font-size:0.75rem; padding:4px 14px; border-radius:20px; letter-spacing:1.5px; text-transform:uppercase; }
 
   .price-box {
-    background: linear-gradient(135deg, #0e0000, #1a0505); border: 1px solid #D90429;
-    border-radius: 14px; padding: 1.2rem; text-align: center; margin-bottom: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease; animation: fadeInUp 0.4s ease;
+    background: linear-gradient(135deg,#0e0000,#1a0505); border:1px solid #D90429;
+    border-radius:14px; padding:1.1rem; text-align:center; margin-bottom:1rem;
+    transition:transform 0.2s,box-shadow 0.2s;
   }
-  .price-box:hover { transform: scale(1.04); box-shadow: 0 8px 25px rgba(217,4,41,0.2); }
-  .price-box .label { color: #666; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; }
-  .price-box .value { color: #FFFFFF; font-size: clamp(1.1rem, 4vw, 1.5rem); font-weight: 900; margin-top: 4px; }
-  .price-box .currency { color: #D90429; font-size: 0.78rem; }
+  .price-box:hover { transform:scale(1.04); box-shadow:0 8px 25px rgba(217,4,41,0.2); }
+  .price-box .label { color:#666; font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; }
+  .price-box .value { color:#FFFFFF; font-size:clamp(1rem,4vw,1.4rem); font-weight:900; margin-top:3px; }
+  .price-box .currency { color:#D90429; font-size:0.72rem; }
 
-  .amelioration-card { background: linear-gradient(135deg, #120f00, #1a1500); border: 1px solid #cc7700; border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem; animation: fadeInUp 0.4s ease; }
-  .amelioration-card h3 { color: #ffaa00 !important; border-bottom-color: #2a2000 !important; }
+  .gains-table { width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:clamp(0.72rem,2vw,0.85rem); }
+  .gains-table th { background:#D90429; color:white; padding:8px 10px; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.8px; text-align:center; }
+  .gains-table td { background:#0e1117; color:#CCC; padding:9px 10px; text-align:center; border-bottom:1px solid #1e2530; }
+  .gains-table tr:hover td { background:#161b22; color:#FFF; }
+  .gains-table .pos { color:#44dd88; font-weight:700; }
+  .gains-table .neg { color:#ff4444; }
 
-  .metric-item {
-    background: #161b22; border: 1px solid #2a3140; border-radius: 12px;
-    padding: 0.8rem; text-align: center; flex: 1; min-width: 90px;
-    transition: all 0.2s ease; animation: fadeInUp 0.4s ease;
-  }
-  .metric-item:hover { border-color: #D90429; transform: translateY(-2px); }
-  .metric-item .m-label { color: #555; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.8px; }
-  .metric-item .m-value { color: #FFF; font-size: clamp(0.85rem, 3vw, 1.1rem); font-weight: 700; margin-top: 3px; }
-  .metric-item .m-value.red { color: #D90429; }
-  .metric-item .m-value.green { color: #44dd88; }
+  .pub-badge { display:inline-block; background:#1a0800; border:1px solid #cc5500; color:#ff9944; font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:12px; }
 
-  .gains-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
-  .gains-table th { background: #D90429; color: white; padding: 8px 12px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; text-align: center; }
-  .gains-table td { background: #0e1117; color: #CCC; padding: 10px 12px; font-size: 0.88rem; text-align: center; border-bottom: 1px solid #2a3140; }
-  .gains-table tr:hover td { background: #161b22; color: #FFF; }
-  .gains-table .highlight { color: #44dd88; font-weight: 700; }
+  .amelioration-card { background:linear-gradient(135deg,#120f00,#1a1500); border:1px solid #cc7700; border-radius:14px; padding:1.25rem; margin-bottom:1rem; }
 
-  .titre-option { background: #0e1117; border: 1px solid #2a3140; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.6rem; transition: all 0.2s ease; }
-  .titre-option:hover { border-color: #D90429; transform: translateX(5px); background: #0e0000; }
-  .titre-option .num { color: #D90429; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.25rem; }
-  .titre-option .texte { color: #FFFFFF; font-size: 1rem; font-weight: 700; line-height: 1.4; }
+  .metric-item { background:#161b22; border:1px solid #2a3140; border-radius:12px; padding:0.75rem; text-align:center; flex:1; min-width:85px; transition:all 0.2s; }
+  .metric-item:hover { border-color:#D90429; transform:translateY(-2px); }
+  .metric-item .m-label { color:#555; font-size:0.6rem; text-transform:uppercase; letter-spacing:0.8px; }
+  .metric-item .m-value { color:#FFF; font-size:clamp(0.82rem,3vw,1rem); font-weight:700; margin-top:2px; }
+  .metric-item .m-value.red { color:#D90429; }
 
-  .avantage-card { background: #0e1117; border-left: 3px solid #D90429; border-radius: 0 12px 12px 0; padding: 0.9rem 1.2rem; margin-bottom: 0.5rem; transition: all 0.2s ease; }
-  .avantage-card:hover { background: #0e0000; transform: translateX(5px); }
-  .avantage-card .av-titre { color: #D90429; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.2rem; }
-  .avantage-card .av-texte { color: #BBB; font-size: 0.88rem; line-height: 1.6; }
+  .titre-option { background:#0e1117; border:1px solid #2a3140; border-radius:12px; padding:0.9rem 1.1rem; margin-bottom:0.5rem; transition:all 0.2s; }
+  .titre-option:hover { border-color:#D90429; transform:translateX(4px); background:#0e0000; }
+  .titre-option .num { color:#D90429; font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.2rem; }
+  .titre-option .texte { color:#FFFFFF; font-size:0.95rem; font-weight:700; line-height:1.4; }
 
-  .ad-block { background: #161b22; border: 1px solid #2a3140; border-radius: 12px; padding: 1.25rem; margin-bottom: 0.5rem; animation: fadeInUp 0.4s ease; transition: box-shadow 0.2s ease; }
-  .ad-block:hover { box-shadow: 0 6px 25px rgba(217,4,41,0.1); }
-  .ad-block .angle { color: #D90429; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem; }
-  .ad-texte { color: #CCC; font-size: 0.92rem; line-height: 1.9; white-space: pre-wrap; }
+  .avantage-card { background:#0e1117; border-left:3px solid #D90429; border-radius:0 12px 12px 0; padding:0.85rem 1.1rem; margin-bottom:0.45rem; transition:all 0.2s; }
+  .avantage-card:hover { background:#0e0000; transform:translateX(4px); }
+  .avantage-card .av-titre { color:#D90429; font-weight:700; font-size:0.82rem; margin-bottom:0.15rem; }
+  .avantage-card .av-texte { color:#BBB; font-size:0.85rem; line-height:1.6; }
 
-  .script-block { background: #161b22; border: 1px solid #2a3140; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; animation: fadeInUp 0.4s ease; }
-  .script-block .s-angle { color: #D90429; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2a3140; }
-  .script-texte { color: #CCC; font-size: 0.92rem; line-height: 2; white-space: pre-wrap; }
+  .ad-block { background:#161b22; border:1px solid #2a3140; border-radius:12px; padding:1.2rem; margin-bottom:0.5rem; transition:box-shadow 0.2s; }
+  .ad-block:hover { box-shadow:0 6px 25px rgba(217,4,41,0.1); }
+  .ad-block .angle { color:#D90429; font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.5rem; }
+  .ad-texte { color:#CCC; font-size:0.9rem; line-height:1.9; white-space:pre-wrap; }
 
-  .offre-card { background: linear-gradient(135deg, #050f00, #0a1800); border: 1px solid #336600; border-radius: 14px; padding: 1.25rem; margin-bottom: 0.75rem; transition: all 0.2s ease; animation: fadeInUp 0.4s ease; }
-  .offre-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(51,102,0,0.25); border-color: #55aa00; }
-  .offre-card .offre-titre { color: #77dd22; font-weight: 900; font-size: 0.95rem; margin-bottom: 0.4rem; }
-  .offre-card .offre-desc { color: #BBB; font-size: 0.88rem; line-height: 1.7; }
-  .offre-card .offre-prix { color: #55dd88; font-weight: 700; font-size: 0.82rem; margin-top: 0.5rem; }
+  .script-block { background:#161b22; border:1px solid #2a3140; border-radius:12px; padding:1.4rem; margin-bottom:1rem; }
+  .script-block .s-angle { color:#D90429; font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.7rem; padding-bottom:0.45rem; border-bottom:1px solid #2a3140; }
+  .script-texte { color:#CCC; font-size:0.9rem; line-height:2; white-space:pre-wrap; }
 
-  .creative-card { background: linear-gradient(135deg, #000a1a, #001025); border: 1px solid #0055aa; border-radius: 14px; padding: 1.4rem; margin-bottom: 1rem; animation: fadeInUp 0.4s ease; }
-  .creative-card h4 { color: #3399ff; font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #001a3a; }
-  .prompt-box { background: #000d1a; border: 1px solid #003366; border-radius: 10px; padding: 1rem; font-size: 0.85rem; color: #aaccee; line-height: 1.8; white-space: pre-wrap; font-family: 'Inter', monospace; }
+  .offre-card { background:linear-gradient(135deg,#050f00,#0a1800); border:1px solid #336600; border-radius:14px; padding:1.2rem; margin-bottom:0.7rem; transition:all 0.2s; }
+  .offre-card:hover { transform:translateY(-3px); box-shadow:0 8px 25px rgba(51,102,0,0.2); border-color:#55aa00; }
+  .offre-card .offre-titre { color:#77dd22; font-weight:900; font-size:0.92rem; margin-bottom:0.35rem; }
+  .offre-card .offre-desc { color:#BBB; font-size:0.85rem; line-height:1.7; }
+  .offre-card .offre-prix { color:#55dd88; font-weight:700; font-size:0.78rem; margin-top:0.45rem; }
 
-  .golden-rule { background: linear-gradient(135deg, #0e0000, #1a0800); border: 1px solid #cc5500; border-radius: 12px; padding: 1rem 1.2rem; margin-bottom: 1rem; }
-  .golden-rule p { color: #ffaa55; font-size: 0.82rem; margin: 0; line-height: 1.8; }
+  .creative-card { background:linear-gradient(135deg,#000a1a,#001025); border:1px solid #0055aa; border-radius:14px; padding:1.3rem; margin-bottom:1rem; }
+  .creative-card h4 { color:#3399ff; font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:0.7rem; padding-bottom:0.45rem; border-bottom:1px solid #001a3a; }
+  .prompt-box { background:#000d1a; border:1px solid #003366; border-radius:10px; padding:1rem; font-size:0.82rem; color:#aaccee; line-height:1.8; white-space:pre-wrap; }
 
-  .copy-wrap { margin: 0.4rem 0 0.9rem; }
-  .export-section { background: linear-gradient(135deg, #0a0000, #150000); border: 2px solid #D90429; border-radius: 16px; padding: 1.5rem; margin-top: 2rem; text-align: center; }
+  .golden-rule { background:linear-gradient(135deg,#0e0000,#1a0800); border:1px solid #cc5500; border-radius:12px; padding:0.9rem 1.1rem; margin-bottom:1rem; }
+  .golden-rule p { color:#ffaa55; font-size:0.8rem; margin:0; line-height:1.8; }
 
-  #MainMenu, footer, header { visibility: hidden; }
-  label { color: #AAAAAA !important; font-weight: 600 !important; font-size: 0.85rem !important; }
+  .export-section { background:linear-gradient(135deg,#0a0000,#150000); border:2px solid #D90429; border-radius:16px; padding:1.4rem; margin-top:2rem; text-align:center; }
 
-  @media (max-width: 768px) {
-    .block-container { padding-left: 0.4rem !important; padding-right: 0.4rem !important; }
-    .hero-banner { padding: 1.25rem 0.75rem; }
-    .stTabs [data-baseweb="tab"] { padding: 0.3rem 0.4rem !important; font-size: 0.62rem !important; }
+  #MainMenu, footer, header { visibility:hidden; }
+  label { color:#AAAAAA !important; font-weight:600 !important; font-size:0.83rem !important; }
+
+  @media (max-width:768px) {
+    .block-container { padding-left:0.4rem !important; padding-right:0.4rem !important; }
+    .hero-banner { padding:1.2rem 0.75rem; }
+    .stTabs [data-baseweb="tab"] { padding:0.3rem 0.35rem !important; font-size:0.58rem !important; }
+    .gains-table th, .gains-table td { padding:6px 5px; font-size:0.68rem; }
   }
 </style>
 """, unsafe_allow_html=True)
 
 # ── UTILITAIRES ───────────────────────────────────────────────────────────────
 
-def copy_button(text, uid):
-    safe = text.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${").replace("\n", "\\n")
-    st.markdown(f"""
-    <div class="copy-wrap">
-      <button onclick="(function(){{
+def inline_copy(text, uid):
+    safe = text.replace("\\","\\\\").replace("`","\\`").replace("${","\\${").replace("\n","\\n")
+    return f"""<button onclick="(function(){{
         navigator.clipboard.writeText(`{safe}`).then(()=>{{
-          var b=document.getElementById('cb_{uid}');
-          b.innerHTML='✅ Copié !';
-          b.style.color='#44dd88'; b.style.borderColor='#44dd88';
-          setTimeout(()=>{{b.innerHTML='📋 Copier';b.style.color='#888';b.style.borderColor='#2a3140';}},2500);
+          var b=document.getElementById('ic_{uid}');
+          b.innerHTML='✅'; b.style.color='#44dd88'; b.style.borderColor='#44dd88';
+          setTimeout(()=>{{b.innerHTML='📋';b.style.color='#555';b.style.borderColor='#2a3140';}},2000);
         }});
-      }})()" id="cb_{uid}" style="
-        background:transparent; color:#888; border:1px solid #2a3140;
-        border-radius:8px; padding:7px 18px; font-size:0.78rem; font-weight:600;
-        cursor:pointer; transition:all 0.2s ease; width:100%; font-family:Inter,sans-serif;
-      ">📋 Copier</button>
-    </div>""", unsafe_allow_html=True)
+      }})()" id="ic_{uid}" class="inline-copy" title="Copier">📋</button>"""
+
+def card_with_copy(title, content_html, copy_text, uid):
+    return f"""<div class="result-card">
+      <div class="card-header">
+        <span class="card-title">{title}</span>
+        {inline_copy(copy_text, uid)}
+      </div>
+      {content_html}
+    </div>"""
 
 def save_to_history(name, score, data, prix_achat):
     if "history" not in st.session_state:
@@ -199,119 +208,79 @@ def save_to_history(name, score, data, prix_achat):
     existing = [h for h in st.session_state["history"] if h["name"] != name]
     st.session_state["history"] = [entry] + existing[:7]
 
+def get_pub_budget(ventes):
+    if ventes <= 10: return "5$–7$/jour"
+    elif ventes <= 20: return "7$–10$/jour"
+    else: return "15$–20$/jour"
+
 def build_export(product_name, purchase_price, price_min, price_max, data):
     lines = []
-    lines.append("=" * 60)
-    lines.append(f"  ECOMASTER LABO PRO — PACK MARKETING")
-    lines.append(f"  Produit : {product_name}")
-    lines.append(f"  Prix achat : {purchase_price:,} FCFA | Vente : {price_min:,}–{price_max:,} FCFA")
-    lines.append(f"  Score : {data.get('score','?')}/10 | Type : {data.get('type_produit','').upper()}")
-    lines.append("=" * 60)
-
-    lines.append("\n📊 STRATÉGIE\n")
-    lines.append(f"Verdict : {data.get('score_justification','')}")
-    lines.append(f"\nPublic cible : {data.get('public_cible','')}")
-    lines.append("\nPeurs :")
-    for p in data.get("peurs", []):
-        lines.append(f"  - {p}")
-    lines.append("\nDésirs :")
-    for d in data.get("desirs", []):
-        lines.append(f"  - {d}")
-
-    lines.append("\n" + "─" * 60)
-    lines.append("\n🎁 OFFRES\n")
-    for i, o in enumerate(data.get("offres", [])):
-        lines.append(f"Offre {i+1} — {o.get('nom','')}")
-        lines.append(f"  {o.get('description','')}")
-        lines.append(f"  Prix : {o.get('prix_suggere','')} | {o.get('argument','')}\n")
-
-    lines.append("─" * 60)
-    lines.append("\n🛍️ SHOPIFY\n")
-    shopify = data.get("shopify", {})
-    lines.append("Titres :")
-    for t in shopify.get("titres", []):
+    sep = "=" * 60
+    lines += [sep, "  ECOMASTER LABO PRO — PACK MARKETING COMPLET",
+              f"  Créé par LABO · {datetime.now().strftime('%d/%m/%Y %H:%M')}",
+              f"  Produit : {product_name}",
+              f"  Prix achat : {purchase_price:,} FCFA | Vente : {price_min:,}–{price_max:,} FCFA",
+              f"  Score : {data.get('score','?')}/10 | Type : {data.get('type_produit','').upper()}", sep, ""]
+    lines += ["\n📊 STRATÉGIE", "-"*40,
+              f"Verdict : {data.get('score_justification','')}",
+              f"\nPublic cible : {data.get('public_cible','')}",
+              "\nPeurs :"] + [f"  - {p}" for p in data.get("peurs",[])]
+    lines += ["\nDésirs :"] + [f"  - {d}" for d in data.get("desirs",[])]
+    lines += ["\n\n🎁 OFFRES", "-"*40]
+    for i, o in enumerate(data.get("offres",[])):
+        lines += [f"Offre {i+1} — {o.get('nom','')}",
+                  f"  {o.get('description','')}",
+                  f"  Prix : {o.get('prix_suggere','')} | {o.get('argument','')}", ""]
+    lines += ["\n🛍️ SHOPIFY", "-"*40, "Titres :"]
+    for t in data.get("shopify",{}).get("titres",[]):
         lines.append(f"  [{t.get('angle','')}] {t.get('titre','')}")
     lines.append("\nAvantages :")
-    for av in shopify.get("avantages", []):
+    for av in data.get("shopify",{}).get("avantages",[]):
         lines.append(f"  ✦ {av.get('titre','')} : {av.get('texte','')}")
-
-    lines.append("\n" + "─" * 60)
-    lines.append("\n📣 FACEBOOK ADS\n")
-    for i, ad in enumerate(data.get("facebook_ads", [])):
-        lines.append(f"--- Ad Copy {i+1} — {ad.get('angle','')} ---")
-        lines.append(ad.get("texte", ""))
-        lines.append("")
-
-    lines.append("─" * 60)
-    lines.append("\n🎙️ SCRIPTS VOIX-OFF\n")
-    for i, s in enumerate(data.get("scripts", [])):
-        lines.append(f"--- Script {i+1} — {s.get('angle','')} ---")
-        lines.append(s.get("texte_complet", ""))
-        lines.append("")
-
-    lines.append("=" * 60)
-    lines.append("  Généré par EcoMaster Labo Pro — e-com Family Tool")
-    lines.append("=" * 60)
+    lines += ["\n\n📣 FACEBOOK ADS", "-"*40]
+    for i, ad in enumerate(data.get("facebook_ads",[])):
+        lines += [f"--- Ad Copy {i+1} — {ad.get('angle','')} ---", ad.get("texte",""), ""]
+    lines += ["\n🎙️ SCRIPTS VOIX-OFF", "-"*40]
+    for i, s in enumerate(data.get("scripts",[])):
+        lines += [f"--- Script {i+1} — {s.get('angle','')} ---", s.get("texte_complet",""), ""]
+    lines += ["", sep, "  Généré par EcoMaster Labo Pro — e-com Family Tool by LABO", sep]
     return "\n".join(lines)
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("""<div style="padding:0.5rem 0 1rem;">
-      <p style="color:#D90429; font-weight:800; font-size:1rem; margin:0;">🚀 EcoMaster Labo Pro</p>
-      <p style="color:#444; font-size:0.72rem; margin:0;">v3.0 Elite — Afrique Francophone</p>
+    st.markdown("""<div style="padding:0.5rem 0 0.75rem;">
+      <p style="color:#D90429;font-weight:800;font-size:1rem;margin:0;">🚀 EcoMaster Labo Pro</p>
+      <p style="color:#333;font-size:0.68rem;margin:0;">by LABO · v4.0 Elite</p>
     </div>""", unsafe_allow_html=True)
     st.markdown("---")
-
-    st.markdown("""<p style="color:#666; font-size:0.72rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:0.75rem;">🕐 Historique</p>""", unsafe_allow_html=True)
-
+    st.markdown("""<p style="color:#555;font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:0.6rem;">🕐 Historique</p>""", unsafe_allow_html=True)
     history = st.session_state.get("history", [])
     if not history:
-        st.markdown("""<p style="color:#333; font-size:0.82rem; font-style:italic;">Aucune analyse encore</p>""", unsafe_allow_html=True)
+        st.markdown("""<p style="color:#333;font-size:0.8rem;font-style:italic;">Aucune analyse</p>""", unsafe_allow_html=True)
     else:
         for i, h in enumerate(history):
-            label = f"{'⭐' if i==0 else '📦'} {h['name'][:16]}{'...' if len(h['name'])>16 else ''}"
-            sublabel = f"Score {h['score']}/10 · {h.get('ts','')}"
-            if st.button(label, key=f"hist_btn_{i}", help=sublabel):
+            label = f"{'⭐' if i==0 else '📦'} {h['name'][:15]}{'…' if len(h['name'])>15 else ''}"
+            if st.button(label, key=f"hist_{i}", help=f"Score {h['score']}/10 · {h.get('ts','')}"):
                 st.session_state["result"] = h["data"]
                 st.session_state["analyzed"] = True
                 st.session_state["active_product"] = h["name"]
                 st.session_state["active_price"] = h["prix_achat"]
                 st.rerun()
-
     st.markdown("---")
     st.markdown("""<div class="golden-rule">
       <p>💡 <b style="color:#ffcc44;">Règle d'or :</b><br>
-      Budget pub : <b style="color:#ff8844;">4$–7$/jour</b><br>
-      sur <b>1 seule créative</b> pour le testing.<br><br>
-      Prix vente = achat + <b style="color:#ff8844;">8 000–12 000 FCFA</b><br>
-      <span style="color:#555; font-size:0.75rem;">(pub + livraison + marge inclus)</span></p>
+      Budget test : <b style="color:#ff8844;">4$–7$/jour</b><br>
+      sur <b>1 seule créative</b> Facebook.<br><br>
+      Prix vente = achat + <b style="color:#ff8844;">8K–12K FCFA</b><br>
+      <span style="color:#444;font-size:0.72rem;">(pub+livraison+closing+marge)</span></p>
     </div>""", unsafe_allow_html=True)
 
 # ── HERO ──────────────────────────────────────────────────────────────────────
 st.markdown("""<div class="hero-banner">
   <h1>🚀 <span>EcoMaster</span> Labo Pro</h1>
-  <p>⚡ Intelligence Artificielle · Neuro-Marketing · Afrique Francophone</p>
+  <p class="slogan">Tout-en-un pour un e-commerce réussi</p>
+  <p class="sub">créé par LABO</p>
 </div>""", unsafe_allow_html=True)
-
-# ── CHOIX IA ──────────────────────────────────────────────────────────────────
-st.markdown("""<div style="background:#161b22; border:1px solid #2a3140; border-radius:14px; padding:1.1rem 1.25rem; margin-bottom:1.25rem;">
-  <p style="color:#D90429; font-weight:700; margin:0 0 0.6rem; font-size:0.88rem; text-transform:uppercase; letter-spacing:1px;">🤖 Moteur IA</p>
-""", unsafe_allow_html=True)
-ai_choice = st.radio("Moteur", ["🟢 Groq — LLaMA 4 (Gratuit)", "🔵 OpenAI — GPT-4o (Payant)"], horizontal=True, label_visibility="collapsed")
-st.markdown('</div>', unsafe_allow_html=True)
-
-if "Groq" in ai_choice:
-    st.markdown("""<div style="background:#050f00; border:1px solid #226600; border-radius:12px; padding:0.9rem 1.25rem; margin-bottom:1.25rem;">
-      <p style="color:#55dd22; font-weight:700; margin:0 0 0.2rem; font-size:0.88rem;">🔑 Clé API Groq — Gratuite</p>
-      <p style="color:#555; font-size:0.78rem; margin:0;"><a href="https://console.groq.com" target="_blank" style="color:#55dd22;">console.groq.com</a> → API Keys → Create API Key</p>
-    </div>""", unsafe_allow_html=True)
-    api_key = st.text_input("🔑 Clé Groq", type="password", placeholder="gsk_...")
-else:
-    st.markdown("""<div style="background:#00050f; border:1px solid #003399; border-radius:12px; padding:0.9rem 1.25rem; margin-bottom:1.25rem;">
-      <p style="color:#3399ff; font-weight:700; margin:0 0 0.2rem; font-size:0.88rem;">🔑 Clé API OpenAI</p>
-      <p style="color:#555; font-size:0.78rem; margin:0;"><a href="https://platform.openai.com/api-keys" target="_blank" style="color:#3399ff;">platform.openai.com</a> → Create new secret key</p>
-    </div>""", unsafe_allow_html=True)
-    api_key = st.text_input("🔑 Clé OpenAI", type="password", placeholder="sk-...")
 
 # ── INPUTS ────────────────────────────────────────────────────────────────────
 col1, col2 = st.columns([3, 2], gap="large")
@@ -320,6 +289,7 @@ with col1:
     default_price = st.session_state.get("active_price", 5000)
     product_name = st.text_input("📦 Nom du Produit", value=default_name, placeholder="Ex: Pince Multifonction Pro")
     purchase_price = st.number_input("💰 Prix d'Achat (FCFA)", min_value=0, step=500, value=default_price)
+    objectif_ventes = st.number_input("🎯 Objectif de ventes par jour", min_value=1, step=1, value=10)
 with col2:
     uploaded_files = st.file_uploader("📸 Photos (1 à 3)", type=["jpg","jpeg","png","webp"], accept_multiple_files=True)
     if uploaded_files:
@@ -331,49 +301,54 @@ with col2:
 price_min = purchase_price + 8000
 price_max = purchase_price + 12000
 prix_moyen = (price_min + price_max) / 2
-frais_par_vente = 6000
 
 st.markdown("<br>", unsafe_allow_html=True)
-p1, p2, p3, p4 = st.columns(4, gap="small")
+p1,p2,p3,p4 = st.columns(4, gap="small")
 with p1:
-    st.markdown(f"""<div class="price-box"><div class="label">💵 Prix Min</div><div class="value">{price_min:,}<span class="currency"> FCFA</span></div></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="price-box"><div class="label">💵 Prix Min</div><div class="value">{price_min:,}<span class="currency"> F</span></div></div>""", unsafe_allow_html=True)
 with p2:
-    st.markdown(f"""<div class="price-box"><div class="label">💵 Prix Max</div><div class="value">{price_max:,}<span class="currency"> FCFA</span></div></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="price-box"><div class="label">💵 Prix Max</div><div class="value">{price_max:,}<span class="currency"> F</span></div></div>""", unsafe_allow_html=True)
 with p3:
-    st.markdown(f"""<div class="price-box"><div class="label">📈 Marge</div><div class="value">8K–12K<span class="currency"> FCFA</span></div></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class="price-box"><div class="label">📈 Marge</div><div class="value">8K–12K<span class="currency"> F</span></div></div>""", unsafe_allow_html=True)
 with p4:
-    st.markdown(f"""<div class="price-box"><div class="label">📣 Budget Pub</div><div class="value">4$–7$<span class="currency">/jour</span></div></div>""", unsafe_allow_html=True)
+    pub_badge = get_pub_budget(objectif_ventes)
+    st.markdown(f"""<div class="price-box"><div class="label">📣 Budget Pub</div><div class="value" style="color:#ff9944;font-size:1.1rem;">{pub_badge}</div></div>""", unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 analyze_clicked = st.button("⚡ LANCER L'ANALYSE IA COMPLÈTE", use_container_width=True)
 
 # ── PROMPT ────────────────────────────────────────────────────────────────────
 def build_prompt(name, prix_achat, prix_min, prix_max):
-    return f"""Tu es un expert en neuro-marketing et e-commerce pour le marché africain francophone (Côte d'Ivoire, Sénégal, Cameroun, Mali, Burkina Faso, Togo, Bénin, etc.).
-Ton langage doit être percutant, basé sur l'émotion : confiance, utilité immédiate, statut social, peur de manquer.
-Adapte tout à la réalité africaine : prix FCFA, Facebook/WhatsApp, habitudes d'achat locales.
+    return f"""Tu es un expert en neuro-marketing et e-commerce pour le marché africain francophone (Côte d'Ivoire, Sénégal, Cameroun, Mali, Burkina Faso, Togo, Bénin).
+Langue : français percutant, émotionnel, adapté à Facebook/WhatsApp africain.
+Valeurs locales : confiance, statut social, utilité immédiate, peur de manquer.
 
 PRODUIT : {name}
 PRIX D'ACHAT : {prix_achat} FCFA
-FOURCHETTE DE VENTE : {prix_min}–{prix_max} FCFA (pub + livraison + marge inclus)
-BUDGET PUB : 4$–7$/jour, 1 seule créative pour testing Facebook
+FOURCHETTE DE VENTE : {prix_min}–{prix_max} FCFA
 
-Type produit : "wow" = effet visuel immédiat / "probleme_solution" = résout un problème
+Type : "wow" = effet visuel immédiat / "probleme_solution" = résout un problème
+
+CONTRAINTES STRICTES :
+- Shopify : EXACTEMENT 6 paragraphes, chaque paragraphe avec un titre en gras, MAXIMUM 4 phrases par paragraphe
+- Facebook Ads : 3 variantes, émotionnel et fun, MAXIMUM 5 lignes, inclure un titre accrocheur (ex: 🔥 PROMO FLASH, ⚠️ STOCK LIMITÉ)
+- Scripts voix-off 30s-1min :
+  * Si WOW : Hook choc → Problème express → Solution visuelle → Preuve sociale (ex: "M. Kofi a testé...") → CTA urgent
+  * Si PROBLÈME-SOLUTION : Hook émotionnel → Frustration → La Solution → Témoignage (ex: "Mme Aminata...") → CTA urgent
 
 Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après :
 
 {{
   "score": 8,
-  "score_justification": "analyse du potentiel sur le marché africain",
+  "score_justification": "analyse détaillée du potentiel africain",
   "type_produit": "wow",
-  "ameliorations": ["conseil 1", "conseil 2", "conseil 3"],
+  "ameliorations": ["conseil africain 1", "conseil 2", "conseil 3"],
   "public_cible": "description très détaillée : âge, sexe, situation, revenus, habitudes africaines, douleurs, rêves",
-  "peurs": ["peur africaine 1", "peur 2", "peur 3"],
-  "desirs": ["désir africain 1", "désir 2", "désir 3"],
-  "budget_pub_usd": "4$-7$ par jour",
-  "mots_cles": ["mot-clé 1", "mot-clé 2", "mot-clé 3", "mot-clé 4", "mot-clé 5"],
+  "peurs": ["peur africaine précise 1", "peur 2", "peur 3"],
+  "desirs": ["désir africain précis 1", "désir 2", "désir 3"],
+  "mots_cles": ["mot1", "mot2", "mot3", "mot4", "mot5"],
   "offres": [
-    {{"nom": "nom", "description": "contenu précis", "prix_suggere": "XXXX FCFA", "argument": "pourquoi ça marche en Afrique"}},
+    {{"nom": "nom", "description": "contenu précis", "prix_suggere": "XXXX FCFA", "argument": "pourquoi ça marche"}},
     {{"nom": "nom", "description": "contenu", "prix_suggere": "XXXX FCFA", "argument": "argument"}},
     {{"nom": "nom", "description": "contenu", "prix_suggere": "XXXX FCFA", "argument": "argument"}}
   ],
@@ -383,70 +358,52 @@ Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après :
       {{"angle": "Curiosité / Wow", "titre": "titre 2"}},
       {{"angle": "Urgence / FOMO", "titre": "titre 3"}}
     ],
-    "avantages": [
-      {{"titre": "titre", "texte": "max 2 lignes"}},
-      {{"titre": "titre", "texte": "max 2 lignes"}},
-      {{"titre": "titre", "texte": "max 2 lignes"}},
-      {{"titre": "titre", "texte": "max 2 lignes"}},
-      {{"titre": "titre", "texte": "max 2 lignes"}},
-      {{"titre": "titre", "texte": "max 2 lignes"}}
+    "paragraphes": [
+      {{"titre": "**Titre §1**", "texte": "4 phrases max. Accroche émotionnelle."}},
+      {{"titre": "**Titre §2**", "texte": "4 phrases max. Présentation produit."}},
+      {{"titre": "**Titre §3**", "texte": "4 phrases max. Bénéfice principal."}},
+      {{"titre": "**Titre §4**", "texte": "4 phrases max. Preuve sociale."}},
+      {{"titre": "**Titre §5**", "texte": "4 phrases max. Utilisation / mode d'emploi."}},
+      {{"titre": "**Titre §6**", "texte": "4 phrases max. Urgence + CTA fort."}}
     ]
   }},
   "facebook_ads": [
-    {{"angle": "Émotionnel", "texte": "AD COPY COMPLET bloc unique, emojis, 5-7 lignes, ton africain direct"}},
-    {{"angle": "Preuve Sociale", "texte": "AD COPY COMPLET bloc unique, témoignage africain authentique, emojis"}},
-    {{"angle": "Urgence / Offre", "texte": "AD COPY COMPLET bloc unique, urgence, offre limitée, emojis"}}
+    {{"angle": "Émotionnel", "accroche": "🔥 TITRE CHOC ICI", "texte": "Ad copy COMPLET max 5 lignes, émotionnel, emojis africains"}},
+    {{"angle": "Preuve Sociale", "accroche": "⭐ TITRE TÉMOIGNAGE ICI", "texte": "Ad copy COMPLET max 5 lignes, témoignage africain authentique"}},
+    {{"angle": "Urgence", "accroche": "⚠️ STOCK LIMITÉ / PROMO FLASH", "texte": "Ad copy COMPLET max 5 lignes, urgence, offre limitée"}}
   ],
   "scripts": [
-    {{"angle": "Émotionnel", "texte_complet": "SCRIPT VOIX-OFF COMPLET bloc unique fluide 30-45sec. Si wow: effet visuel d'abord. Si probleme_solution: Problème→Solution→Témoignage→Fonctionnement→CTA. Ton africain chaleureux."}},
-    {{"angle": "Bénéfice Direct", "texte_complet": "SCRIPT VOIX-OFF COMPLET bloc unique, angle différent."}},
-    {{"angle": "Urgence & Statut", "texte_complet": "SCRIPT VOIX-OFF COMPLET bloc unique, joue sur statut social africain."}}
+    {{"angle": "Script Principal", "texte_complet": "SCRIPT VOIX-OFF COMPLET bloc unique 30-60sec selon type produit avec structure indiquée ci-dessus"}},
+    {{"angle": "Script Émotionnel", "texte_complet": "SCRIPT VOIX-OFF COMPLET bloc unique, angle émotionnel différent"}},
+    {{"angle": "Script Urgence & Statut", "texte_complet": "SCRIPT VOIX-OFF COMPLET bloc unique, joue sur statut social africain"}}
   ],
-  "creative_prompt_en": "Ultra-professional product photo prompt in English for Midjourney/Canva AI — describe the product in a lifestyle African context, studio lighting, hyperrealistic, commercial advertising style",
-  "creative_prompt_fr": "Prompt image publicitaire en français pour Canva AI / Leonardo AI — décris le produit dans un contexte africain moderne, éclairage studio, ultra-réaliste, style pub professionnelle"
+  "creative_prompt_en": "Ultra-professional product advertising photo prompt for Midjourney/Leonardo AI in African lifestyle context, studio lighting, hyperrealistic, 4K",
+  "creative_prompt_fr": "Prompt image pub professionnel pour Canva AI / Adobe Firefly, contexte africain moderne, éclairage studio, ultra-réaliste 4K"
 }}"""
 
-def call_groq(key, prompt, images):
+# ── API ────────────────────────────────────────────────────────────────────────
+def call_groq(prompt, images):
     from groq import Groq
-    client = Groq(api_key=key)
+    api_key = st.secrets["GROQ_API_KEY"]
+    client = Groq(api_key=api_key)
     content = []
     for img_data in images:
         b64 = base64.b64encode(img_data).decode("utf-8")
-        content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}})
-    content.append({"type": "text", "text": prompt})
+        content.append({"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{b64}"}})
+    content.append({"type":"text","text":prompt})
     response = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
-        messages=[{"role": "user", "content": content}],
+        messages=[{"role":"user","content":content}],
         max_tokens=4000,
     )
     raw = response.choices[0].message.content.strip()
-    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-    raw = re.sub(r"\s*```$", "", raw)
-    return json.loads(raw)
-
-def call_openai(key, prompt, images):
-    from openai import OpenAI
-    client = OpenAI(api_key=key)
-    content = []
-    for img_data in images:
-        b64 = base64.b64encode(img_data).decode("utf-8")
-        content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}})
-    content.append({"type": "text", "text": prompt})
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": content}],
-        max_tokens=4000,
-    )
-    raw = response.choices[0].message.content.strip()
-    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-    raw = re.sub(r"\s*```$", "", raw)
+    raw = re.sub(r"^```(?:json)?\s*","",raw)
+    raw = re.sub(r"\s*```$","",raw)
     return json.loads(raw)
 
 # ── ANALYSE ───────────────────────────────────────────────────────────────────
 if analyze_clicked:
-    if not api_key:
-        st.error("⚠️ Entre ta clé API en haut de la page !")
-    elif not product_name.strip():
+    if not product_name.strip():
         st.error("⚠️ Entre le nom du produit.")
     elif not uploaded_files:
         st.error("⚠️ Upload au moins une photo.")
@@ -455,14 +412,12 @@ if analyze_clicked:
         prompt = build_prompt(product_name, purchase_price, price_min, price_max)
         with st.spinner("🧠 Analyse IA en cours... 15-20 secondes ⏳"):
             try:
-                if "Groq" in ai_choice:
-                    data = call_groq(api_key, prompt, images_bytes)
-                else:
-                    data = call_openai(api_key, prompt, images_bytes)
+                data = call_groq(prompt, images_bytes)
                 st.session_state["result"] = data
                 st.session_state["analyzed"] = True
                 st.session_state["active_product"] = product_name
                 st.session_state["active_price"] = purchase_price
+                st.session_state["active_ventes"] = objectif_ventes
                 save_to_history(product_name, data.get("score","?"), data, purchase_price)
                 st.rerun()
             except Exception as e:
@@ -472,110 +427,153 @@ if analyze_clicked:
 # ── RÉSULTATS ─────────────────────────────────────────────────────────────────
 if st.session_state.get("analyzed") and "result" in st.session_state:
     data = st.session_state["result"]
-    type_produit = data.get("type_produit", "wow")
-    score = int(data.get("score", 8))
+    type_produit = data.get("type_produit","wow")
+    score = int(data.get("score",8))
     active_name = st.session_state.get("active_product", product_name)
     active_price = st.session_state.get("active_price", purchase_price)
+    active_ventes = st.session_state.get("active_ventes", objectif_ventes)
     active_price_min = active_price + 8000
     active_price_max = active_price + 12000
     active_prix_moyen = (active_price_min + active_price_max) / 2
 
-    st.markdown(f"""<div style="background:#161b22; border:1px solid #2a3140; border-radius:10px; padding:0.6rem 1rem; margin-bottom:1rem; display:flex; align-items:center; gap:0.75rem;">
-      <span style="color:#D90429; font-size:1.2rem;">📦</span>
-      <div>
-        <p style="color:#FFF; font-weight:700; margin:0; font-size:0.95rem;">{active_name}</p>
-        <p style="color:#555; font-size:0.75rem; margin:0;">Prix achat : {active_price:,} FCFA · Vente : {active_price_min:,}–{active_price_max:,} FCFA</p>
+    st.markdown(f"""<div style="background:#161b22;border:1px solid #2a3140;border-radius:10px;padding:0.6rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+      <span style="color:#D90429;font-size:1.1rem;">📦</span>
+      <div style="flex:1;min-width:150px;">
+        <p style="color:#FFF;font-weight:700;margin:0;font-size:0.92rem;">{active_name}</p>
+        <p style="color:#444;font-size:0.72rem;margin:0;">Achat : {active_price:,} F · Vente : {active_price_min:,}–{active_price_max:,} FCFA</p>
       </div>
-      <span style="margin-left:auto; background:#D90429; color:white; font-weight:900; padding:3px 12px; border-radius:12px; font-size:0.82rem;">{score}/10</span>
+      <span style="background:#D90429;color:white;font-weight:900;padding:3px 12px;border-radius:12px;font-size:0.8rem;">{score}/10</span>
     </div>""", unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "📊 Stratégie", "🎁 Offres", "🛍️ Shopify",
-        "📣 Facebook Ads", "🎙️ Voix-Off", "📈 Graphiques", "🖼️ Créatives AI"
+    tab1,tab2,tab3,tab4,tab5,tab6,tab7 = st.tabs([
+        "📊 Stratégie","🎁 Offres","🛍️ Shopify",
+        "📣 Facebook Ads","🎙️ Voix-Off","📈 Graphiques","🖼️ Créatives AI"
     ])
 
     # ── TAB 1 : STRATÉGIE ────────────────────────────────────────────────────
     with tab1:
-        c1, c2 = st.columns([1, 2], gap="large")
+        c1, c2 = st.columns([1,2], gap="large")
         with c1:
             st.markdown(f"""<div class="score-wrap">
               <div class="score-badge">{score}/10</div>
-              <p style="color:#555; font-size:0.75rem; margin-bottom:0.6rem; text-transform:uppercase; letter-spacing:1px;">Potentiel</p>
-              {"<div class='wow-badge'>⚡ WOW</div>" if type_produit == "wow" else "<div class='ps-badge'>🎯 PROB-SOL</div>"}
+              <p style="color:#444;font-size:0.72rem;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">Potentiel</p>
+              {"<div class='wow-badge'>⚡ WOW</div>" if type_produit=="wow" else "<div class='ps-badge'>🎯 PROB-SOL</div>"}
             </div>""", unsafe_allow_html=True)
         with c2:
-            st.markdown(f"""<div class="result-card">
-              <h3>💡 Verdict IA</h3>
-              <p style="line-height:1.75; font-size:0.9rem; color:#CCC;">{data.get("score_justification","")}</p>
-            </div>""", unsafe_allow_html=True)
+            verdict_txt = data.get("score_justification","")
+            st.markdown(card_with_copy(
+                "💡 Verdict IA",
+                f'<p style="line-height:1.75;font-size:0.88rem;color:#CCC;">{verdict_txt}</p>',
+                verdict_txt, "verdict"
+            ), unsafe_allow_html=True)
 
         if score < 9:
-            st.markdown('<div class="amelioration-card"><h3>⚠️ Comment Booster ce Produit ?</h3>', unsafe_allow_html=True)
-            for a in data.get("ameliorations", []):
-                st.markdown(f"<p style='margin:0.35rem 0; font-size:0.88rem; color:#CCC;'>🔧 {a}</p>", unsafe_allow_html=True)
+            st.markdown('<div class="amelioration-card">', unsafe_allow_html=True)
+            st.markdown('<div class="card-header"><span class="card-title">⚠️ Comment Booster ce Produit ?</span></div>', unsafe_allow_html=True)
+            for a in data.get("ameliorations",[]):
+                st.markdown(f"<p style='margin:0.3rem 0;font-size:0.86rem;color:#CCC;'>🔧 {a}</p>", unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown(f"""<div style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;">
-          <div class="metric-item"><div class="m-label">Budget Pub</div><div class="m-value red">{data.get("budget_pub_usd","4$-7$")}</div></div>
-          <div class="metric-item"><div class="m-label">Marge Min</div><div class="m-value">8 000 F</div></div>
-          <div class="metric-item"><div class="m-label">Marge Max</div><div class="m-value">12 000 F</div></div>
+        st.markdown(f"""<div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin-bottom:1rem;">
+          <div class="metric-item"><div class="m-label">Budget Pub</div><div class="m-value red">{get_pub_budget(active_ventes)}</div></div>
+          <div class="metric-item"><div class="m-label">Marge Min</div><div class="m-value">8K FCFA</div></div>
+          <div class="metric-item"><div class="m-label">Marge Max</div><div class="m-value">12K FCFA</div></div>
           <div class="metric-item"><div class="m-label">Type</div><div class="m-value red">{"⚡WOW" if type_produit=="wow" else "🎯P-S"}</div></div>
         </div>""", unsafe_allow_html=True)
 
-        # CALCULATEUR DE GAINS
-        st.markdown('<div class="result-card"><h3>💰 Calculateur de Gains Prévisionnels</h3>', unsafe_allow_html=True)
-        gains_rows = ""
-        for nb_ventes in [5, 10, 20]:
-            ca = nb_ventes * active_prix_moyen
-            couts = nb_ventes * (active_price + frais_par_vente)
-            benefice = ca - couts
-            gains_rows += f"""<tr>
-              <td><b>{nb_ventes} ventes/jour</b></td>
-              <td>{ca:,.0f} FCFA</td>
-              <td>{couts:,.0f} FCFA</td>
-              <td class="highlight">+{benefice:,.0f} FCFA</td>
+        # CALCULATEUR DYNAMIQUE
+        st.markdown('<div class="result-card"><div class="card-header"><span class="card-title">💰 Tableau de Prévision — Rentabilité</span></div>', unsafe_allow_html=True)
+
+        def calc_row(v, pm, pa, pub_fcfa=3000):
+            ca = v * pm
+            cout_prod = v * pa
+            livraison = v * 2000
+            closing = v * 1000
+            pub = pub_fcfa
+            total_couts = cout_prod + livraison + closing + pub
+            benef = ca - total_couts
+            return ca, cout_prod, livraison, closing, pub, benef
+
+        pub_estimates = {range(1,11): 3000, range(11,21): 5000, range(21,200): 12000}
+        pub_fcfa = 12000
+        for r, val in pub_estimates.items():
+            if active_ventes in r:
+                pub_fcfa = val
+                break
+
+        rows_html = ""
+        for v in [5, 10, active_ventes] if active_ventes not in [5,10] else [5, 10, 20]:
+            ca, cp, lv, cl, pb, bn = calc_row(v, active_prix_moyen, active_price, pub_fcfa)
+            color = "pos" if bn > 0 else "neg"
+            sign = "+" if bn > 0 else ""
+            rows_html += f"""<tr>
+              <td><b>{v} ventes</b></td>
+              <td>{ca:,.0f} F</td>
+              <td>{cp:,.0f} F</td>
+              <td>{lv:,.0f} F</td>
+              <td>{cl:,.0f} F</td>
+              <td><span class="pub-badge">{get_pub_budget(v)}</span></td>
+              <td class="{color}">{sign}{bn:,.0f} F</td>
             </tr>"""
+
+        # Ligne objectif si différent
+        if active_ventes not in [5,10,20]:
+            ca, cp, lv, cl, pb, bn = calc_row(active_ventes, active_prix_moyen, active_price, pub_fcfa)
+            color = "pos" if bn > 0 else "neg"
+            sign = "+" if bn > 0 else ""
+            rows_html += f"""<tr style="background:#0e0000 !important;">
+              <td><b>🎯 {active_ventes} ventes</b></td>
+              <td>{ca:,.0f} F</td>
+              <td>{cp:,.0f} F</td>
+              <td>{lv:,.0f} F</td>
+              <td>{cl:,.0f} F</td>
+              <td><span class="pub-badge">{get_pub_budget(active_ventes)}</span></td>
+              <td class="{color}">{sign}{bn:,.0f} F</td>
+            </tr>"""
+
         st.markdown(f"""
+        <div style="overflow-x:auto;">
         <table class="gains-table">
           <thead><tr>
-            <th>Volume</th><th>Chiffre d'Affaires</th><th>Coûts Totaux</th><th>Bénéfice Net</th>
+            <th>Volume</th><th>CA</th><th>Produit</th><th>Livraison</th><th>Closing</th><th>Budget Pub</th><th>Bénéfice Net</th>
           </tr></thead>
-          <tbody>{gains_rows}</tbody>
+          <tbody>{rows_html}</tbody>
         </table>
-        <p style="color:#444; font-size:0.72rem; margin-top:0.5rem;">* Coûts = prix achat + 6 000 FCFA frais (pub+livraison) · Prix vente moyen = {active_prix_moyen:,.0f} FCFA</p>
+        </div>
+        <p style="color:#333;font-size:0.68rem;margin-top:0.4rem;">* Livraison : 2 000 F/vente · Closing : 1 000 F/vente · Prix moyen : {active_prix_moyen:,.0f} FCFA</p>
         """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        cp, cd = st.columns(2, gap="medium")
-        with cp:
-            st.markdown('<div class="result-card"><h3>😰 Peurs du Client</h3>', unsafe_allow_html=True)
-            for p in data.get("peurs", []):
-                st.markdown(f"<p style='margin:0.3rem 0; font-size:0.88rem;'>🔴 {p}</p>", unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        with cd:
-            st.markdown('<div class="result-card"><h3>✨ Désirs du Client</h3>', unsafe_allow_html=True)
-            for d in data.get("desirs", []):
-                st.markdown(f"<p style='margin:0.3rem 0; font-size:0.88rem;'>💚 {d}</p>", unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+        cp_col, cd_col = st.columns(2, gap="medium")
+        with cp_col:
+            peurs_txt = "\n".join([f"- {p}" for p in data.get("peurs",[])])
+            st.markdown(card_with_copy("😰 Peurs du Client",
+                "".join([f"<p style='margin:0.3rem 0;font-size:0.86rem;'>🔴 {p}</p>" for p in data.get("peurs",[])]),
+                peurs_txt, "peurs"), unsafe_allow_html=True)
+        with cd_col:
+            desirs_txt = "\n".join([f"- {d}" for d in data.get("desirs",[])])
+            st.markdown(card_with_copy("✨ Désirs du Client",
+                "".join([f"<p style='margin:0.3rem 0;font-size:0.86rem;'>💚 {d}</p>" for d in data.get("desirs",[])]),
+                desirs_txt, "desirs"), unsafe_allow_html=True)
 
-        st.markdown(f"""<div class="result-card">
-          <h3>🎯 Public Cible Détaillé</h3>
-          <p style="line-height:1.8; font-size:0.9rem; color:#CCC;">{data.get("public_cible","")}</p>
-        </div>""", unsafe_allow_html=True)
+        public = data.get("public_cible","")
+        st.markdown(card_with_copy("🎯 Public Cible Détaillé",
+            f'<p style="line-height:1.8;font-size:0.88rem;color:#CCC;">{public}</p>',
+            public, "public"), unsafe_allow_html=True)
 
-        mots = data.get("mots_cles", [])
+        mots = data.get("mots_cles",[])
         if mots:
-            st.markdown('<div class="result-card"><h3>🔍 Mots-Clés Stratégiques</h3>', unsafe_allow_html=True)
-            badges = "".join([f'<span style="background:#1a0000; border:1px solid #D90429; color:#FFF; padding:4px 12px; border-radius:20px; font-size:0.78rem; margin:3px; display:inline-block;">{m}</span>' for m in mots])
-            st.markdown(f"<div style='flex-wrap:wrap;'>{badges}</div>", unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+            badges = "".join([f'<span style="background:#1a0000;border:1px solid #D90429;color:#FFF;padding:3px 11px;border-radius:20px;font-size:0.75rem;margin:3px;display:inline-block;">{m}</span>' for m in mots])
+            st.markdown(card_with_copy("🔍 Mots-Clés Stratégiques",
+                f'<div style="flex-wrap:wrap;margin-top:0.2rem;">{badges}</div>',
+                " · ".join(mots), "mots"), unsafe_allow_html=True)
 
     # ── TAB 2 : OFFRES ───────────────────────────────────────────────────────
     with tab2:
-        st.markdown("""<div style="background:#050f00; border:1px solid #336600; border-radius:12px; padding:0.8rem 1rem; margin-bottom:1rem;">
-          <p style="color:#77dd22; font-weight:700; margin:0; font-size:0.88rem;">🎁 Offres pour booster tes ventes en Afrique</p>
+        st.markdown("""<div style="background:#050f00;border:1px solid #336600;border-radius:12px;padding:0.75rem 1rem;margin-bottom:1rem;">
+          <p style="color:#77dd22;font-weight:700;margin:0;font-size:0.85rem;">🎁 Offres booster — Marché Africain</p>
         </div>""", unsafe_allow_html=True)
-        for i, offre in enumerate(data.get("offres", [])):
+        for i, offre in enumerate(data.get("offres",[])):
             st.markdown(f"""<div class="offre-card">
               <div class="offre-titre">🎁 {offre.get("nom","")}</div>
               <div class="offre-desc">{offre.get("description","")}</div>
@@ -584,170 +582,192 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
 
     # ── TAB 3 : SHOPIFY ──────────────────────────────────────────────────────
     with tab3:
-        shopify = data.get("shopify", {})
-        st.markdown('<div class="result-card"><h3>🏷️ 3 Titres Magnétiques</h3>', unsafe_allow_html=True)
-        for i, t in enumerate(shopify.get("titres", [])):
+        shopify = data.get("shopify",{})
+        titres_txt = "\n".join([f"[{t.get('angle','')}] {t.get('titre','')}" for t in shopify.get("titres",[])])
+        st.markdown('<div class="result-card"><div class="card-header"><span class="card-title">🏷️ 3 Titres Magnétiques</span>' + inline_copy(titres_txt,"all_titres") + '</div>', unsafe_allow_html=True)
+        for i, t in enumerate(shopify.get("titres",[])):
             st.markdown(f"""<div class="titre-option">
               <div class="num">Option {i+1} — {t.get("angle","")}</div>
               <div class="texte">{t.get("titre","")}</div>
             </div>""", unsafe_allow_html=True)
-            copy_button(t.get("titre",""), f"titre_{i}")
+            st.markdown(inline_copy(t.get("titre",""), f"titre_{i}"), unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="result-card"><h3>✅ Avantages Produit</h3>', unsafe_allow_html=True)
-        for j, av in enumerate(shopify.get("avantages", [])):
+        st.markdown('<div class="result-card"><div class="card-header"><span class="card-title">📝 Fiche Shopify — 6 Paragraphes</span></div>', unsafe_allow_html=True)
+        for j, para in enumerate(shopify.get("paragraphes",[])):
+            para_txt = f"{para.get('titre','')}\n{para.get('texte','')}"
             st.markdown(f"""<div class="avantage-card">
-              <div class="av-titre">✦ {av.get("titre","")}</div>
-              <div class="av-texte">{av.get("texte","")}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.3rem;">
+                <div class="av-titre">{para.get("titre","")}</div>
+                {inline_copy(para_txt, f"para_{j}")}
+              </div>
+              <div class="av-texte">{para.get("texte","")}</div>
             </div>""", unsafe_allow_html=True)
-            copy_button(f"{av.get('titre','')}\n{av.get('texte','')}", f"av_{j}")
         st.markdown('</div>', unsafe_allow_html=True)
 
     # ── TAB 4 : FACEBOOK ADS ─────────────────────────────────────────────────
     with tab4:
-        st.markdown("""<div style="background:#0e0000; border:1px solid #330000; border-radius:10px; padding:0.7rem 1rem; margin-bottom:1rem;">
-          <p style="color:#888; font-size:0.8rem; margin:0;">💡 Copie chaque texte directement dans Facebook Ads Manager</p>
+        st.markdown("""<div style="background:#0e0000;border:1px solid #330000;border-radius:10px;padding:0.65rem 1rem;margin-bottom:1rem;">
+          <p style="color:#888;font-size:0.78rem;margin:0;">💡 Copie chaque texte dans Facebook Ads Manager · Max 5 lignes par variante</p>
         </div>""", unsafe_allow_html=True)
-        for i, ad in enumerate(data.get("facebook_ads", [])):
-            texte = ad.get("texte", "")
+        for i, ad in enumerate(data.get("facebook_ads",[])):
+            texte = ad.get("texte","")
+            accroche = ad.get("accroche","")
+            full_ad = f"{accroche}\n{texte}"
             st.markdown(f"""<div class="ad-block">
-              <div class="angle">📣 Ad Copy {i+1} — {ad.get("angle","")}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                <div class="angle">📣 Ad {i+1} — {ad.get("angle","")}</div>
+                {inline_copy(full_ad, f"ad_{i}")}
+              </div>
+              <p style="color:#ff9944;font-weight:700;font-size:0.88rem;margin:0 0 0.4rem;">{accroche}</p>
               <div class="ad-texte">{texte}</div>
             </div>""", unsafe_allow_html=True)
-            copy_button(texte, f"ad_{i}")
 
     # ── TAB 5 : VOIX-OFF ─────────────────────────────────────────────────────
     with tab5:
-        type_label = "⚡ PRODUIT WOW" if type_produit == "wow" else "🎯 PROBLÈME-SOLUTION"
-        st.markdown(f"""<div style="background:#0e0000; border:1px solid #330000; border-radius:10px; padding:0.7rem 1rem; margin-bottom:1rem;">
-          <p style="color:#D90429; font-weight:700; margin:0; font-size:0.85rem;">Type : {type_label} · Scripts prêts à lire (30-45 sec)</p>
+        type_label = "⚡ PRODUIT WOW" if type_produit=="wow" else "🎯 PROBLÈME-SOLUTION"
+        st.markdown(f"""<div style="background:#0e0000;border:1px solid #330000;border-radius:10px;padding:0.65rem 1rem;margin-bottom:1rem;">
+          <p style="color:#D90429;font-weight:700;margin:0;font-size:0.82rem;">Type : {type_label} · Scripts prêts à lire (30–60 sec)</p>
         </div>""", unsafe_allow_html=True)
-        for i, script in enumerate(data.get("scripts", [])):
-            texte_script = script.get("texte_complet", "")
+        for i, script in enumerate(data.get("scripts",[])):
+            texte_script = script.get("texte_complet","")
             st.markdown(f"""<div class="script-block">
-              <div class="s-angle">🎙️ Script {i+1} — {script.get("angle","")}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;padding-bottom:0.4rem;border-bottom:1px solid #2a3140;">
+                <span class="s-angle" style="margin:0;border:none;padding:0;">🎙️ Script {i+1} — {script.get("angle","")}</span>
+                {inline_copy(texte_script, f"script_{i}")}
+              </div>
               <div class="script-texte">{texte_script}</div>
             </div>""", unsafe_allow_html=True)
-            copy_button(texte_script, f"script_{i}")
 
     # ── TAB 6 : GRAPHIQUES ───────────────────────────────────────────────────
     with tab6:
         try:
             import plotly.graph_objects as go
             g1, g2 = st.columns(2, gap="medium")
-
             with g1:
-                fig_donut = go.Figure(data=[go.Pie(
-                    labels=["Score actuel", "Marge possible"],
-                    values=[score, 10 - score],
+                fig_d = go.Figure(data=[go.Pie(
+                    labels=["Score","Progression"],
+                    values=[score, 10-score],
                     hole=0.65,
-                    marker=dict(colors=["#D90429", "#1a1a2e"]),
+                    marker=dict(colors=["#D90429","#1a1a2e"]),
                     textinfo="none", hoverinfo="label+value"
                 )])
-                fig_donut.update_layout(
+                fig_d.update_layout(
                     paper_bgcolor="#161b22", plot_bgcolor="#161b22",
-                    font=dict(color="#FFF", family="Inter"),
+                    font=dict(color="#FFF",family="Inter"),
                     showlegend=True,
-                    legend=dict(font=dict(color="#666", size=9), orientation="h", y=-0.15),
-                    annotations=[dict(text=f"<b>{score}/10</b>", x=0.5, y=0.5, font_size=18, font_color="#FFF", showarrow=False)],
-                    margin=dict(t=10, b=30, l=10, r=10), height=220
+                    legend=dict(font=dict(color="#666",size=9),orientation="h",y=-0.15),
+                    annotations=[dict(text=f"<b>{score}/10</b>",x=0.5,y=0.5,font_size=18,font_color="#FFF",showarrow=False)],
+                    margin=dict(t=10,b=30,l=10,r=10), height=210
                 )
-                st.markdown("**🎯 Score Potentiel**")
-                st.plotly_chart(fig_donut, use_container_width=True)
-
+                st.markdown("**🎯 Score**")
+                st.plotly_chart(fig_d, use_container_width=True)
             with g2:
-                fig_gauge = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=score * 10,
-                    title={"text": "Potentiel %", "font": {"color": "#666", "size": 11}},
+                fig_g = go.Figure(go.Indicator(
+                    mode="gauge+number", value=score*10,
+                    title={"text":"Potentiel %","font":{"color":"#666","size":11}},
                     gauge={
-                        "axis": {"range": [0, 100], "tickcolor": "#444", "tickfont": {"color": "#444", "size": 9}},
-                        "bar": {"color": "#D90429"},
-                        "bgcolor": "#0e1117",
-                        "steps": [
-                            {"range": [0, 40], "color": "#1a0000"},
-                            {"range": [40, 70], "color": "#2a0800"},
-                            {"range": [70, 100], "color": "#1a1000"},
-                        ],
-                        "threshold": {"line": {"color": "#ff6600", "width": 3}, "thickness": 0.75, "value": 80}
+                        "axis":{"range":[0,100],"tickcolor":"#444","tickfont":{"color":"#444","size":9}},
+                        "bar":{"color":"#D90429"}, "bgcolor":"#0e1117",
+                        "steps":[{"range":[0,40],"color":"#1a0000"},{"range":[40,70],"color":"#2a0800"},{"range":[70,100],"color":"#1a1000"}],
+                        "threshold":{"line":{"color":"#ff6600","width":3},"thickness":0.75,"value":80}
                     },
-                    number={"suffix": "%", "font": {"color": "#FFF", "size": 22}}
+                    number={"suffix":"%","font":{"color":"#FFF","size":22}}
                 ))
-                fig_gauge.update_layout(
-                    paper_bgcolor="#161b22", font=dict(color="#FFF", family="Inter"),
-                    margin=dict(t=20, b=10, l=15, r=15), height=220
-                )
-                st.markdown("**📊 Jauge Potentiel**")
-                st.plotly_chart(fig_gauge, use_container_width=True)
+                fig_g.update_layout(paper_bgcolor="#161b22",font=dict(color="#FFF",family="Inter"),margin=dict(t=20,b=10,l=15,r=15),height=210)
+                st.markdown("**📊 Jauge**")
+                st.plotly_chart(fig_g, use_container_width=True)
 
-            # Graphique gains prévisionnels
-            ventes = [5, 10, 20]
-            benefices = [v * active_prix_moyen - v * (active_price + frais_par_vente) for v in ventes]
+            ventes_graph = [5,10,15,20,active_ventes] if active_ventes not in [5,10,15,20] else [5,10,15,20,25]
+            ventes_graph = sorted(set(ventes_graph))
+            benefices_g = [calc_row(v, active_prix_moyen, active_price, pub_fcfa)[5] for v in ventes_graph]
+            colors_g = ["#44dd88" if b > 0 else "#ff4444" for b in benefices_g]
             fig_gains = go.Figure(data=[go.Bar(
-                x=[f"{v} ventes/j" for v in ventes],
-                y=benefices,
-                marker_color=["#aa0020", "#D90429", "#ff4455"],
-                text=[f"+{b:,.0f} F" for b in benefices],
-                textposition="outside",
-                textfont=dict(color="#FFF", size=10)
+                x=[f"{v}v/j" for v in ventes_graph], y=benefices_g,
+                marker_color=colors_g,
+                text=[f"{'+' if b>0 else ''}{b:,.0f}F" for b in benefices_g],
+                textposition="outside", textfont=dict(color="#CCC",size=9)
             )])
             fig_gains.update_layout(
                 paper_bgcolor="#161b22", plot_bgcolor="#161b22",
-                font=dict(color="#888", family="Inter", size=10),
-                xaxis=dict(tickfont=dict(color="#888"), gridcolor="#1e2530"),
-                yaxis=dict(tickfont=dict(color="#555"), gridcolor="#1e2530"),
-                margin=dict(t=30, b=15, l=15, r=15), height=200,
-                showlegend=False
+                font=dict(color="#888",family="Inter",size=9),
+                xaxis=dict(tickfont=dict(color="#888"),gridcolor="#1e2530"),
+                yaxis=dict(tickfont=dict(color="#555"),gridcolor="#1e2530"),
+                margin=dict(t=25,b=10,l=10,r=10), height=200, showlegend=False
             )
-            st.markdown("**💰 Bénéfice Net Prévisionnel**")
+            st.markdown("**💰 Bénéfice Net par Volume de Ventes**")
             st.plotly_chart(fig_gains, use_container_width=True)
-
         except Exception as e:
             st.warning(f"Graphiques indisponibles : {e}")
 
     # ── TAB 7 : CRÉATIVES AI ─────────────────────────────────────────────────
     with tab7:
-        st.markdown("""<div style="background:#000a1a; border:1px solid #003399; border-radius:12px; padding:0.8rem 1rem; margin-bottom:1rem;">
-          <p style="color:#3399ff; font-weight:700; margin:0; font-size:0.88rem;">🖼️ Générateur de Prompts Créatives Publicitaires</p>
-          <p style="color:#555; font-size:0.78rem; margin:0.2rem 0 0;">Copie ces prompts dans Midjourney, Canva AI, Leonardo AI ou DALL-E pour créer tes visuels pub</p>
+        st.markdown("""<div style="background:#000a1a;border:1px solid #003399;border-radius:12px;padding:0.75rem 1rem;margin-bottom:1rem;">
+          <p style="color:#3399ff;font-weight:700;margin:0;font-size:0.85rem;">🖼️ Prompts pour générer tes visuels publicitaires avec l'IA</p>
+          <p style="color:#444;font-size:0.76rem;margin:0.2rem 0 0;">Copie dans Midjourney · Leonardo AI · Canva AI · Bing Image Creator</p>
         </div>""", unsafe_allow_html=True)
 
-        prompt_en = data.get("creative_prompt_en", f"Professional product photography of {active_name}, African lifestyle context, studio lighting, hyperrealistic, commercial advertising, clean background, 4K quality")
-        prompt_fr = data.get("creative_prompt_fr", f"Photo publicitaire professionnelle de {active_name}, contexte africain moderne, éclairage studio, ultra-réaliste, style pub commerciale, fond épuré, qualité 4K")
+        prompt_en = data.get("creative_prompt_en", f"Professional product advertising photo of {active_name}, African lifestyle, studio lighting, hyperrealistic, 4K commercial")
+        prompt_fr = data.get("creative_prompt_fr", f"Photo publicitaire professionnelle de {active_name}, contexte africain moderne, éclairage studio, ultra-réaliste 4K")
 
-        st.markdown("""<div class="creative-card">
-          <h4>🇬🇧 Prompt Anglais — Midjourney / DALL-E / Leonardo AI</h4>""", unsafe_allow_html=True)
-        st.markdown(f'<div class="prompt-box">{prompt_en}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        copy_button(prompt_en, "prompt_en")
+        st.markdown(f"""<div class="creative-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;padding-bottom:0.4rem;border-bottom:1px solid #001a3a;">
+            <h4 style="margin:0;">🇬🇧 Prompt Anglais — Midjourney / Leonardo / DALL-E</h4>
+            {inline_copy(prompt_en,"pen")}
+          </div>
+          <div class="prompt-box">{prompt_en}</div>
+        </div>""", unsafe_allow_html=True)
 
-        st.markdown("""<div class="creative-card">
-          <h4>🇫🇷 Prompt Français — Canva AI / Adobe Firefly</h4>""", unsafe_allow_html=True)
-        st.markdown(f'<div class="prompt-box">{prompt_fr}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        copy_button(prompt_fr, "prompt_fr")
+        st.markdown(f"""<div class="creative-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem;padding-bottom:0.4rem;border-bottom:1px solid #001a3a;">
+            <h4 style="margin:0;">🇫🇷 Prompt Français — Canva AI / Adobe Firefly</h4>
+            {inline_copy(prompt_fr,"pfr")}
+          </div>
+          <div class="prompt-box">{prompt_fr}</div>
+        </div>""", unsafe_allow_html=True)
 
-        st.markdown("""<div style="background:#0a0a0a; border:1px solid #1a1a2a; border-radius:12px; padding:1rem; margin-top:1rem;">
-          <p style="color:#555; font-size:0.82rem; margin:0; line-height:1.8;">
-            💡 <b style="color:#888;">Outils recommandés :</b><br>
-            🆓 <a href="https://www.canva.com" target="_blank" style="color:#3399ff;">Canva AI</a> — Gratuit, interface française<br>
-            🆓 <a href="https://leonardo.ai" target="_blank" style="color:#3399ff;">Leonardo AI</a> — Gratuit, très haute qualité<br>
-            🆓 <a href="https://www.bing.com/images/create" target="_blank" style="color:#3399ff;">Bing Image Creator</a> — Gratuit, propulsé par DALL-E<br>
-            💎 <a href="https://www.midjourney.com" target="_blank" style="color:#3399ff;">Midjourney</a> — Payant, meilleure qualité pro
+        st.markdown("""<div style="background:#0a0a0a;border:1px solid #1a1a2a;border-radius:12px;padding:1rem;margin-top:0.5rem;">
+          <p style="color:#444;font-size:0.8rem;margin:0;line-height:1.9;">
+            🆓 <a href="https://leonardo.ai" target="_blank" style="color:#3399ff;">Leonardo AI</a> — Gratuit, haute qualité &nbsp;·&nbsp;
+            🆓 <a href="https://www.canva.com" target="_blank" style="color:#3399ff;">Canva AI</a> — Gratuit, interface FR<br>
+            🆓 <a href="https://www.bing.com/images/create" target="_blank" style="color:#3399ff;">Bing Image Creator</a> — Gratuit, DALL-E &nbsp;·&nbsp;
+            💎 <a href="https://www.midjourney.com" target="_blank" style="color:#3399ff;">Midjourney</a> — Payant, meilleure qualité
           </p>
         </div>""", unsafe_allow_html=True)
 
-    # ── EXPORT PACK MARKETING ────────────────────────────────────────────────
+    # ── EXPORT ───────────────────────────────────────────────────────────────
     st.markdown("---")
     export_txt = build_export(active_name, active_price, active_price_min, active_price_max, data)
     st.markdown("""<div class="export-section">
-      <p style="color:#D90429; font-weight:800; font-size:1rem; margin:0 0 0.3rem;">📦 Exporter le Pack Marketing Complet</p>
-      <p style="color:#555; font-size:0.82rem; margin:0 0 1rem;">Télécharge tous les textes générés (Analyse + Shopify + Ads + Scripts) en un seul fichier .txt</p>
+      <p style="color:#D90429;font-weight:800;font-size:1rem;margin:0 0 0.25rem;">📦 Pack Marketing Complet</p>
+      <p style="color:#444;font-size:0.8rem;margin:0 0 1rem;">Télécharge toute l'analyse en un fichier .txt prêt à l'emploi</p>
     </div>""", unsafe_allow_html=True)
     st.download_button(
-        label="⬇️ TÉLÉCHARGER MON PACK MARKETING COMPLET (.txt)",
+        label="⬇️ TÉLÉCHARGER MON PACK MARKETING (.txt)",
         data=export_txt,
-        file_name=f"pack_marketing_{active_name.replace(' ','_')}.txt",
+        file_name=f"pack_{active_name.replace(' ','_')}.txt",
         mime="text/plain",
         use_container_width=True
     )
+
+# ══════════════════════════════════════════════════════════════════
+# GUIDE CONFIGURATION CLÉ API SUR STREAMLIT CLOUD
+# ══════════════════════════════════════════════════════════════════
+#
+# Pour que l'application fonctionne sur Streamlit Cloud :
+#
+# ÉTAPE 1 — Va sur share.streamlit.io
+# ÉTAPE 2 — Clique sur les 3 points "..." de ton application
+# ÉTAPE 3 — Clique sur "Settings"
+# ÉTAPE 4 — Clique sur l'onglet "Secrets"
+# ÉTAPE 5 — Dans la zone de texte, colle EXACTEMENT ceci :
+#
+#   GROQ_API_KEY = "gsk_XXXXXXXXXXXXXXXXXXXXXXXX"
+#
+#   (Remplace par ta vraie clé obtenue sur console.groq.com)
+#
+# ÉTAPE 6 — Clique "Save"
+# ÉTAPE 7 — Clique "Reboot app"
+#
+# ✅ L'application lira automatiquement la clé via st.secrets["GROQ_API_KEY"]
+# ══════════════════════════════════════════════════════════════════
