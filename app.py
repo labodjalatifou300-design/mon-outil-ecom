@@ -2,7 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 
-# Config de l'interface
+# Configuration de l'interface
 st.set_page_config(page_title="e-com Family Tool by Labo", layout="wide")
 
 st.markdown("""
@@ -33,13 +33,17 @@ with col2:
         st.write("Budget Pub conseillé : 4$ à 7$ / jour (1 seule créative).")
 
 if st.button("LANCER L'ANALYSE NEURO-MARKETING") and uploaded_file and api_key:
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-pro')
-    img = Image.open(uploaded_file)
-    
-    prompt = f"Analyse ce produit : {product_name}. Trouve les frustrations réelles des gens sur ce produit, leurs peurs et leurs désirs. Puis rédige un score /10, 5 paragraphes de vente Shopify (neuro-marketing), 3 titres chocs, 3 textes pubs Facebook et un script voix-off (Problème-Solution-Témoignage-CTA)."
-    
-    with st.spinner('Labo AI analyse le marché...'):
-        response = model.generate_content([prompt, img])
-        st.markdown("---")
-        st.markdown(response.text)
+    try:
+        genai.configure(api_key=api_key)
+        # CHANGEMENT ICI : On utilise gemini-1.5-flash pour éviter l'erreur NotFound
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        img = Image.open(uploaded_file)
+        
+        prompt = f"Analyse ce produit : {product_name}. Trouve les frustrations réelles des gens sur ce produit, leurs peurs et leurs désirs. Puis rédige un score /10, 5 paragraphes de vente Shopify (neuro-marketing), 3 titres chocs, 3 textes pubs Facebook et un script voix-off (Problème-Solution-Témoignage-CTA)."
+        
+        with st.spinner('Labo AI analyse le marché...'):
+            response = model.generate_content([prompt, img])
+            st.markdown("---")
+            st.markdown(response.text)
+    except Exception as e:
+        st.error(f"Une erreur est survenue : {e}")
