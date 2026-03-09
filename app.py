@@ -393,13 +393,3 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
             file_name=f"script_{product_name.replace(' ','_')}.txt",
             mime="text/plain",
         )
-```
-
----
-
-Et le nouveau `requirements.txt` :
-```
-streamlit>=1.35.0
-groq>=0.9.0
-openai>=1.30.0
-Pillow>=10.0.0
