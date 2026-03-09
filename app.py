@@ -88,16 +88,11 @@ st.markdown("""
     border-radius: 4px; margin-bottom: 0.4rem;
     text-transform: uppercase; letter-spacing: 1px;
   }
-  .ai-selector {
-    background: #1A1A1A; border: 2px solid #D90429;
-    border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;
-  }
   #MainMenu, footer, header { visibility: hidden; }
   label { color: #CCCCCC !important; font-weight: 600 !important; }
 </style>
 """, unsafe_allow_html=True)
 
-# HERO
 st.markdown("""
 <div class="hero-banner">
   <h1>🚀 <span>EcoMaster</span> Labo Pro</h1>
@@ -106,35 +101,41 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # CHOIX IA
-st.markdown('<div class="ai-selector">', unsafe_allow_html=True)
-st.markdown("### 🤖 Choisis ton moteur IA")
+st.markdown("""
+<div style="background:#1A1A1A; border:2px solid #D90429; border-radius:12px; padding:1.25rem; margin-bottom:1.5rem;">
+  <p style="color:#D90429; font-weight:700; margin:0 0 0.75rem;">🤖 Choisis ton moteur IA</p>
+""", unsafe_allow_html=True)
+
 ai_choice = st.radio(
-    "Moteur IA",
-    ["🟢 Google Gemini (gratuit)", "🔵 OpenAI GPT-4o (payant ~0.02$/analyse)"],
+    "Moteur",
+    ["🟢 Groq — LLaMA 3 (100% Gratuit)", "🔵 OpenAI — GPT-4o (Payant)"],
     horizontal=True,
     label_visibility="collapsed"
 )
 st.markdown('</div>', unsafe_allow_html=True)
 
-# CLÉ API
-if "Gemini" in ai_choice:
+# CLÉ API selon choix
+if "Groq" in ai_choice:
     st.markdown("""
-    <div style="background:#1A0000; border:2px solid #D90429; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem;">
-      <p style="color:#D90429; font-weight:700; margin:0 0 0.3rem;">🔑 Clé API Google Gemini</p>
-      <p style="color:#999; font-size:0.8rem; margin:0;">Obtiens-la sur 
-        <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#D90429;">aistudio.google.com</a>
-        — Crée un nouveau projet si quota épuisé
+    <div style="background:#001a00; border:2px solid #00aa44; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem;">
+      <p style="color:#00dd55; font-weight:700; margin:0 0 0.3rem;">🔑 Clé API Groq — GRATUITE</p>
+      <p style="color:#999; font-size:0.8rem; margin:0;">
+        1. Va sur <a href="https://console.groq.com" target="_blank" style="color:#00dd55;">console.groq.com</a><br>
+        2. Crée un compte gratuit<br>
+        3. Clique "API Keys" puis "Create API Key"<br>
+        4. Copie et colle ta clé ici 👇
       </p>
     </div>
     """, unsafe_allow_html=True)
-    api_key = st.text_input("🔑 Clé API Google Gemini", type="password", placeholder="AIzaSy...")
+    api_key = st.text_input("🔑 Clé API Groq", type="password", placeholder="gsk_...")
 else:
     st.markdown("""
     <div style="background:#001a2d; border:2px solid #0066cc; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem;">
       <p style="color:#4da6ff; font-weight:700; margin:0 0 0.3rem;">🔑 Clé API OpenAI</p>
-      <p style="color:#999; font-size:0.8rem; margin:0;">Obtiens-la sur 
-        <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#4da6ff;">platform.openai.com</a>
-        — 5$ de crédit gratuit à l'inscription (~250 analyses)
+      <p style="color:#999; font-size:0.8rem; margin:0;">
+        1. Va sur <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#4da6ff;">platform.openai.com</a><br>
+        2. Clique "Create new secret key"<br>
+        3. Copie et colle ta clé ici 👇
       </p>
     </div>
     """, unsafe_allow_html=True)
@@ -217,18 +218,28 @@ Réponds UNIQUEMENT avec un JSON valide, sans texte avant ni après, sans balise
   }}
 }}"""
 
-# GEMINI
-def call_gemini(key, prompt, images):
-    import google.generativeai as genai
-    genai.configure(api_key=key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
-    parts = []
-    for img_data in images:
-        img = Image.open(io.BytesIO(img_data))
-        parts.append(img)
-    parts.append(prompt)
-    response = model.generate_content(parts)
-    raw = response.text.strip()
+# GROQ (texte seulement — pas de vision)
+def call_groq(key, prompt, images):
+    from groq import Groq
+    client = Groq(api_key=key)
+
+    # Encode images en base64 pour le prompt visuel
+    image_descriptions = []
+    for i, img_data in enumerate(images):
+        b64 = base64.b64encode(img_data).decode("utf-8")
+        image_descriptions.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
+        })
+
+    content = image_descriptions + [{"type": "text", "text": prompt}]
+
+    response = client.chat.completions.create(
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
+        messages=[{"role": "user", "content": content}],
+        max_tokens=2000,
+    )
+    raw = response.choices[0].message.content.strip()
     raw = re.sub(r"^```(?:json)?\s*", "", raw)
     raw = re.sub(r"\s*```$", "", raw)
     return json.loads(raw)
@@ -268,8 +279,8 @@ if analyze_clicked:
         prompt = build_prompt(product_name, purchase_price, price_min, price_max)
         with st.spinner("🧠 Analyse IA en cours... patiente 15-20 secondes ⏳"):
             try:
-                if "Gemini" in ai_choice:
-                    data = call_gemini(api_key, prompt, images_bytes)
+                if "Groq" in ai_choice:
+                    data = call_groq(api_key, prompt, images_bytes)
                 else:
                     data = call_openai(api_key, prompt, images_bytes)
                 st.session_state["result"] = data
@@ -383,3 +394,12 @@ if st.session_state.get("analyzed") and "result" in st.session_state:
             mime="text/plain",
         )
 ```
+
+---
+
+Et le nouveau `requirements.txt` :
+```
+streamlit>=1.35.0
+groq>=0.9.0
+openai>=1.30.0
+Pillow>=10.0.0
