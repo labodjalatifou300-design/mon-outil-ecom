@@ -800,10 +800,10 @@ with p4:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # ── Bouton TEST connexion API ─────────────────────────────────────────────
-with st.expander("🔌 Tester la connexion API"):
-    if st.button("🔌 TESTER LA CLÉ OPENROUTER", use_container_width=True):
+with st.expander("🔌 Tester la connexion Groq"):
+    if st.button("🔌 TESTER LA CLÉ GROQ", use_container_width=True):
         with st.spinner("Test en cours…"):
-            result_test = test_openrouter_connection()
+            result_test = test_groq_connection()
             if result_test["ok"]:
                 st.success(result_test["msg"])
             else:
@@ -1073,92 +1073,50 @@ def repair_json(raw: str) -> dict:
 
 def call_gemini(prompt: str, images: list) -> dict:
     """
-    OpenRouter — format OpenAI standard.
-    Modèles stables gratuits avec fallback automatique.
+    Appelle Groq — ultra-rapide, 100% gratuit, fiable.
+    Modèle : meta-llama/llama-4-scout-17b-16e-instruct (vision + texte)
+    Clé API : console.groq.com → API Keys → Create
+    Secret Streamlit : GROQ_API_KEY = "gsk_..."
     """
-    import requests
+    from groq import Groq
 
-    api_key = st.secrets["OPENROUTER_API_KEY"]
-    url     = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type":  "application/json",
-        "HTTP-Referer":  "https://streamlit.app",
-        "X-Title":       "EcoMaster Labo Pro",
-    }
+    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-    # ── Modèles texte gratuits — STABLES sur OpenRouter ──────────────────
-    # Ces modèles ne nécessitent pas de crédits ni de carte bancaire
-    MODELS = [
-        "mistralai/mistral-7b-instruct:free",
-        "meta-llama/llama-3.1-8b-instruct:free",
-        "nousresearch/hermes-3-llama-3.1-405b:free",
-        "mistralai/mistral-nemo:free",
-    ]
+    # ── Construction du message multimodal (texte + images) ──────────────
+    content = []
+    for img_data in images:
+        b64 = base64.b64encode(img_data).decode("utf-8")
+        content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
+        })
+    content.append({"type": "text", "text": prompt})
 
-    # ── On envoie SEULEMENT le texte (les modèles gratuits = texte uniquement) ──
-    # Le nom du produit est déjà dans le prompt, les images = bonus optionnel
-    messages = [{"role": "user", "content": prompt}]
-
-    last_err  = None
-    last_body = None
-
-    for model_id in MODELS:
-        try:
-            resp = requests.post(
-                url, headers=headers,
-                json={
-                    "model":       model_id,
-                    "messages":    messages,
-                    "max_tokens":  8000,
-                    "temperature": 0.7,
-                },
-                timeout=90
-            )
-            last_body = resp.text  # garder pour debug
-            if resp.status_code == 200:
-                data = resp.json()
-                raw  = data["choices"][0]["message"]["content"].strip()
-                if raw and len(raw) > 100:
-                    return repair_json(raw)
-            # 429 = quota, 503 = indispo → essayer suivant
-            # 400/404 = mauvais modèle → essayer suivant
-        except Exception as e:
-            last_err = e
-
-    # ── Afficher le vrai message d'erreur pour debug ──────────────────────
-    debug_msg = last_body[:500] if last_body else str(last_err)
-    raise Exception(
-        f"OpenRouter : échec sur tous les modèles.\n"
-        f"Réponse serveur : {debug_msg}"
+    response = client.chat.completions.create(
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
+        messages=[{"role": "user", "content": content}],
+        max_tokens=8000,
+        temperature=0.7,
     )
+    raw = response.choices[0].message.content.strip()
+    return repair_json(raw)
 
 
-def test_openrouter_connection() -> dict:
-    """Test rapide de la connexion OpenRouter."""
-    import requests
+def test_groq_connection() -> dict:
+    """Test rapide de la connexion Groq."""
     try:
-        api_key = st.secrets.get("OPENROUTER_API_KEY", "")
+        from groq import Groq
+        api_key = st.secrets.get("GROQ_API_KEY", "")
         if not api_key:
-            return {"ok": False, "msg": "Clé OPENROUTER_API_KEY absente des Secrets"}
-
-        resp = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type":  "application/json",
-            },
-            json={
-                "model":    "mistralai/mistral-7b-instruct:free",
-                "messages": [{"role": "user", "content": "Réponds juste OK"}],
-                "max_tokens": 10,
-            },
-            timeout=20
+            return {"ok": False, "msg": "Clé GROQ_API_KEY absente des Secrets Streamlit"}
+        client = Groq(api_key=api_key)
+        resp = client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[{"role": "user", "content": "Réponds juste OK"}],
+            max_tokens=5,
         )
-        if resp.status_code == 200:
-            return {"ok": True, "msg": f"✅ Connexion OK · modèle: mistral-7b-instruct:free"}
-        else:
-            return {"ok": False, "msg": f"HTTP {resp.status_code} — {resp.text[:300]}"}
+        txt = resp.choices[0].message.content.strip()
+        return {"ok": True, "msg": f"✅ Groq OK · Réponse : {txt}"}
     except Exception as e:
         return {"ok": False, "msg": str(e)}
 
@@ -1170,7 +1128,7 @@ if analyze_clicked:
         st.error("⚠️ Upload au moins une photo du produit.")
     else:
         images_bytes = [f.read() for f in uploaded_files[:3]]
-        with st.spinner("🧠 IA en cours d'analyse… 20–30 secondes ⏳"):
+        with st.spinner("🧠 Groq analyse ton produit… 10–20 secondes ⏳"):
             try:
                 data = call_gemini(
                     build_prompt(product_name, purchase_price, price_min, price_max),
@@ -1185,14 +1143,14 @@ if analyze_clicked:
                 st.rerun()
             except Exception as e:
                 st.error(f"❌ Erreur IA : {e}")
-                if "OPENROUTER_API_KEY" in str(e) or "API_KEY" in str(e) or "KeyError" in type(e).__name__:
+                if "GROQ_API_KEY" in str(e) or "api_key" in str(e).lower():
                     st.info(
-                        "🔑 Clé API manquante.\n\n"
-                        "1. Va sur **openrouter.ai** → Sign Up (gratuit)\n"
-                        "2. Menu **Keys** → Create Key\n"
-                        "3. Copie la clé (commence par sk-or-v1-...)\n"
+                        "🔑 Clé Groq manquante ou invalide.\n\n"
+                        "1. Va sur **console.groq.com** → Sign Up (gratuit)\n"
+                        "2. Menu **API Keys** → Create API Key\n"
+                        "3. Copie la clé (commence par gsk_...)\n"
                         "4. Streamlit Cloud → Settings → Secrets → ajoute :\n"
-                        "   `OPENROUTER_API_KEY = \"sk-or-v1-...\"` → Save"
+                        "   `GROQ_API_KEY = \"gsk_...\"` → Save"
                     )
                 st.session_state["analyzed"] = False
 
