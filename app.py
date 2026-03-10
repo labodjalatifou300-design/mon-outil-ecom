@@ -186,27 +186,19 @@ st.markdown("""
   /* ══════ BOUTON PRINCIPAL — propre, sans fond noir sur le texte ══════ */
   .stButton > button {
     position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #D90429 0%, #ff1744 50%, #D90429 100%) !important;
-    background-size: 200% 200% !important;
+    background: linear-gradient(135deg, #D90429, #ff1744, #D90429) !important;
+    background-size: 200% auto !important;
     color: #fff !important; border: none !important;
     border-radius: 14px !important; font-weight: 900 !important;
     font-size: 1rem !important; letter-spacing: 2px !important;
     padding: 0.9rem 2rem !important; width: 100% !important;
-    transition: all 0.35s ease !important;
+    transition: background-position 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease !important;
     animation: pulse3d 2.5s infinite;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3) !important;
   }
-  .stButton > button::before {
-    content: '';
-    position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-    transition: left 0.5s ease;
-  }
-  .stButton > button:hover::before { left: 100%; }
   .stButton > button:hover {
+    background-position: right center !important;
     transform: translateY(-4px) !important;
     box-shadow: 0 16px 45px rgba(217,4,41,0.55) !important;
-    background-position: right center !important;
   }
 
   /* Boutons sidebar — discrets */
@@ -237,9 +229,19 @@ st.markdown("""
     transition: all 0.25s ease !important; letter-spacing: 0.3px !important;
   }
   .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, #D90429, #a80220) !important;
+    background: linear-gradient(135deg, #D90429, #c0021f) !important;
     color: #fff !important;
-    box-shadow: 0 4px 20px rgba(217,4,41,0.45) !important;
+    box-shadow: 0 4px 20px rgba(217,4,41,0.4) !important;
+    border: none !important;
+    outline: none !important;
+  }
+  /* Supprime tout fond parasite sur les tabs */
+  .stTabs [data-baseweb="tab"]:focus,
+  .stTabs [data-baseweb="tab"]:focus-visible,
+  .stTabs [data-baseweb="tab"][aria-selected="true"] > div {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
   }
 
   /* ══════ CARTES RÉSULTATS ══════ */
@@ -479,43 +481,6 @@ st.markdown("""
   }
 </style>
 
-<script>
-// Copier universel — PC, iPhone, Android
-function copyText(text, btnId) {
-  var btn = document.getElementById(btnId);
-  function success() {
-    if (btn) {
-      btn.innerHTML = '✅ Copié !';
-      btn.style.color = '#44dd88';
-      btn.style.borderColor = '#44dd88';
-      btn.style.background = '#001a00';
-      setTimeout(function() {
-        btn.innerHTML = '📋 Copier';
-        btn.style.color = '#888';
-        btn.style.borderColor = '#2a3140';
-        btn.style.background = '#1a1a2a';
-      }, 2500);
-    }
-  }
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(success).catch(fallback);
-  } else { fallback(); }
-  function fallback() {
-    try {
-      var ta = document.createElement('textarea');
-      ta.value = text; ta.setAttribute('readonly','');
-      ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;opacity:0;';
-      document.body.appendChild(ta);
-      if (navigator.userAgent.match(/ipad|iphone/i)) {
-        var range = document.createRange(); range.selectNodeContents(ta);
-        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-        ta.setSelectionRange(0, 999999);
-      } else { ta.select(); }
-      document.execCommand('copy'); document.body.removeChild(ta); success();
-    } catch(e) { if(btn){btn.innerHTML='⚠️ Manuel';} }
-  }
-}
-</script>
 // Copier universel — PC, iPhone, Android
 function copyText(text, btnId) {
   var btn = document.getElementById(btnId);
@@ -1095,8 +1060,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
 
     # ── TAB 2 : OFFRES ───────────────────────────────────────────────────────
     with tab2:
-        st.markdown("""<div style="background:#050f00;border:1px solid #336600;border-radius:12px;
-          padding:0.75rem 1rem;margin-bottom:1rem;">
+        st.markdown("""<div style="border-left:3px solid #77dd22;padding:0.4rem 0.8rem;margin-bottom:1rem;">
           <p style="color:#77dd22;font-weight:700;margin:0;font-size:0.85rem;">
             🎁 Offres conçues pour booster tes ventes — Marché Africain Francophone
           </p></div>""", unsafe_allow_html=True)
@@ -1141,8 +1105,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             with st.expander("🔍 Debug JSON reçu"):
                 st.json(data)
         else:
-            st.markdown("""<div style="background:#0e0000;border:1px solid #330000;border-radius:10px;
-              padding:0.65rem 1rem;margin-bottom:1rem;">
+            st.markdown("""<div style="border-left:3px solid #D90429;padding:0.4rem 0.8rem;margin-bottom:1rem;">
               <p style="color:#888;font-size:0.78rem;margin:0;">
                 💡 3 variantes prêtes · Copie le bloc et colle dans Facebook Ads Manager
               </p></div>""", unsafe_allow_html=True)
@@ -1157,8 +1120,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
     # ── TAB 5 : VOIX-OFF ─────────────────────────────────────────────────────
     with tab5:
         type_label = "⚡ PRODUIT WOW" if type_produit == "wow" else "🎯 PROBLÈME-SOLUTION"
-        st.markdown(f"""<div style="background:#0e0000;border:1px solid #330000;border-radius:10px;
-          padding:0.65rem 1rem;margin-bottom:1rem;">
+        st.markdown(f"""<div style="border-left:3px solid #D90429;padding:0.4rem 0.8rem;margin-bottom:1rem;">
           <p style="color:#D90429;font-weight:700;margin:0;font-size:0.82rem;">
             Type : {type_label} · ~130 mots · Copie le script et enregistre ta voix-off
           </p></div>""", unsafe_allow_html=True)
