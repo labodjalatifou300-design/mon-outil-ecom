@@ -320,26 +320,21 @@ function copyText(text, btnId) {
 
 # ── UTILITAIRES ───────────────────────────────────────────────────────────────
 
-def section_header(title):
-    """Entête de carte — le bouton copier est remplacé par st.code() natif."""
+def card_title(title: str):
+    """Titre rouge stylé au-dessus d'un st.code() — affichage unique sans doublon."""
+    st.markdown(
+        f'<p style="color:#D90429;font-size:0.75rem;font-weight:700;'
+        f'text-transform:uppercase;letter-spacing:1.5px;margin:1.2rem 0 0.3rem;">'
+        f'{title}</p>',
+        unsafe_allow_html=True
+    )
+
+# section_header gardé pour compatibilité avec le HTML des cartes visuelles (score, tableau, etc.)
+def section_header(title: str) -> str:
     return (f'<div class="card-header">'
             f'<span class="card-title">{title}</span>'
             f'</div>')
 
-def copy_block(text: str, label: str = "📋 Copier"):
-    """
-    Zone de texte sélectionnable — 100% fiable PC, iPhone, Android.
-    Ctrl+A ou appui long -> Tout sélectionner -> Copier.
-    """
-    lines  = max(2, min(6, text.count("\n") + 1))
-    height = lines * 26 + 16
-    st.text_area(
-        label,
-        value=text,
-        height=height,
-        key=f"copy_{hash(text) & 0xFFFFFF}_{label[:10]}",
-        help="Clic dans la zone → Ctrl+A (PC) ou appui long (mobile) → Copier"
-    )
 
 def save_to_history(name, score, data, prix_achat):
     entry = {
@@ -433,12 +428,12 @@ with st.sidebar:
             label = f"{'⭐' if i == 0 else '📦'} {short}"
             help_txt = f"Score {h['score']}/10 · {h.get('ts','')}"
             if st.button(label, key=f"hist_{i}_{h['name']}", help=help_txt):
-                # Chargement sécurisé sans reset de l'historique
                 st.session_state["result"]         = h["data"]
                 st.session_state["analyzed"]       = True
                 st.session_state["active_product"] = h["name"]
                 st.session_state["active_price"]   = h["prix_achat"]
-                st.rerun()
+                # PAS de st.rerun() ici — le clic déclenche déjà un rerun Streamlit.
+                # Un deuxième rerun() efface les widgets et fait disparaître l'historique.
 
     st.markdown("---")
     st.markdown("""<div class="golden-rule">
@@ -754,31 +749,24 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             </div>""", unsafe_allow_html=True)
         with c2:
             verdict = data.get("score_justification", "")
-            st.markdown(f"""<div class="result-card">
-              {section_header("💡 Verdict IA")}
-              <p style="line-height:1.75;font-size:0.88rem;color:#CCC;">{verdict}</p>
-            </div>""", unsafe_allow_html=True)
-            copy_block(verdict, "📋 Copier le verdict")
+            card_title("💡 Verdict IA")
+            st.code(verdict, language=None)
 
         if score < 9:
             amelios = data.get("ameliorations", [])
             amelios_txt = "\n".join([f"- {a}" for a in amelios])
-            st.markdown(f"""<div class="amelioration-card">
-              {section_header("⚠️ Comment Booster ce Produit ?")}
-              {"".join([f'<p style="margin:0.3rem 0;font-size:0.86rem;color:#CCC;">🔧 {a}</p>' for a in amelios])}
-            </div>""", unsafe_allow_html=True)
-            copy_block(amelios_txt, "📋 Copier les conseils")
+            card_title("⚠️ Comment Booster ce Produit ?")
+            st.code(amelios_txt, language=None)
 
-        st.markdown(f"""<div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin-bottom:1rem;">
+        st.markdown(f"""<div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin:1rem 0;">
           <div class="metric-item"><div class="m-label">Budget Pub</div><div class="m-value red">{get_pub_budget(aventes)}</div></div>
           <div class="metric-item"><div class="m-label">Frais/vente</div><div class="m-value">5 000 F</div></div>
           <div class="metric-item"><div class="m-label">Marge brute</div><div class="m-value">8K–12K F</div></div>
           <div class="metric-item"><div class="m-label">Type</div><div class="m-value red">{"⚡ WOW" if type_produit=="wow" else "🎯 P-S"}</div></div>
         </div>""", unsafe_allow_html=True)
 
-        # ── TABLEAU RENTABILITÉ LABO ──────────────────────────────────────────
+        # ── TABLEAU RENTABILITÉ ───────────────────────────────────────────────
         volumes = sorted(set([5, 10, 20] + ([aventes] if aventes not in [5, 10, 20] else [])))
-
         rows_html = ""
         for v in volumes:
             ca, cout_prod, frais_tot, cout_global, bn = calc_rentabilite(v, apmoy, aprice)
@@ -790,72 +778,51 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             rows_html += f"""<tr{tr_class}>
               <td><b>{label_v}</b></td>
               <td><span class="pub-badge">{get_pub_budget(v)}</span></td>
-              <td>{ca:,.0f} F</td>
-              <td>{cout_global:,.0f} F</td>
+              <td>{ca:,.0f} F</td><td>{cout_global:,.0f} F</td>
               <td class="{cls}">{sign}{bn:,.0f} F</td>
             </tr>"""
 
         st.markdown(f"""<div class="result-card">
-          <div class="card-header">
-            <span class="card-title">💰 Calculateur de Rentabilité LABO</span>
-          </div>
+          <div class="card-header"><span class="card-title">💰 Calculateur de Rentabilité LABO</span></div>
           <div style="overflow-x:auto;">
           <table class="gains-table">
-            <thead>
-              <tr>
-                <th>Ventes</th><th>Budget Pub</th><th>CA</th>
-                <th>Coût Global</th><th>Bénéfice Net</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Ventes</th><th>Budget Pub</th><th>CA</th><th>Coût Global</th><th>Bénéfice Net</th></tr></thead>
             <tbody>{rows_html}</tbody>
           </table></div>
           <p style="color:#333;font-size:0.68rem;margin-top:0.5rem;">
-            * Frais fixes = 5 000 FCFA/vente (2 000 livraison + 2 000 pub + 1 000 closing) · Prix moyen {apmoy:,.0f} FCFA
+            * 5 000 FCFA/vente (2K livraison + 2K pub + 1K closing) · Prix moyen {apmoy:,.0f} FCFA
           </p>
         </div>""", unsafe_allow_html=True)
 
         cp_col, cd_col = st.columns(2, gap="medium")
         with cp_col:
-            peurs     = data.get("peurs", [])
-            peurs_txt = "\n".join(peurs)
-            st.markdown(f"""<div class="result-card">
-              {section_header("😰 Peurs du Client")}
-              {"".join([f'<p style="margin:0.3rem 0;font-size:0.86rem;">🔴 {p}</p>' for p in peurs])}
-            </div>""", unsafe_allow_html=True)
-            copy_block(peurs_txt, "📋 Copier les peurs")
+            peurs = data.get("peurs", [])
+            card_title("😰 Peurs du Client")
+            st.code("\n".join([f"🔴 {p}" for p in peurs]), language=None)
         with cd_col:
-            desirs     = data.get("desirs", [])
-            desirs_txt = "\n".join(desirs)
-            st.markdown(f"""<div class="result-card">
-              {section_header("✨ Désirs du Client")}
-              {"".join([f'<p style="margin:0.3rem 0;font-size:0.86rem;">💚 {d}</p>' for d in desirs])}
-            </div>""", unsafe_allow_html=True)
-            copy_block(desirs_txt, "📋 Copier les désirs")
+            desirs = data.get("desirs", [])
+            card_title("✨ Désirs du Client")
+            st.code("\n".join([f"💚 {d}" for d in desirs]), language=None)
 
         public = data.get("public_cible", "")
-        st.markdown(f"""<div class="result-card">
-          {section_header("🎯 Public Cible")}
-          <p style="line-height:1.8;font-size:0.88rem;color:#CCC;">{public}</p>
-        </div>""", unsafe_allow_html=True)
-        copy_block(public, "📋 Copier le public cible")
+        card_title("🎯 Public Cible")
+        st.code(public, language=None)
 
         mots = data.get("mots_cles", [])
         if mots:
-            badges = "".join([
+            badges_html = "".join([
                 f'<span style="background:#1a0000;border:1px solid #D90429;color:#FFF;'
                 f'padding:3px 11px;border-radius:20px;font-size:0.75rem;margin:3px;display:inline-block;">{m}</span>'
                 for m in mots
             ])
-            st.markdown(f"""<div class="result-card">
-              {section_header("🔍 Mots-Clés")}
-              <div>{badges}</div>
-            </div>""", unsafe_allow_html=True)
-            copy_block(" · ".join(mots), "📋 Copier les mots-clés")
+            card_title("🔍 Mots-Clés")
+            st.markdown(f'<div style="margin-bottom:0.5rem;">{badges_html}</div>', unsafe_allow_html=True)
+            st.code(" · ".join(mots), language=None)
 
     # ── TAB 2 : OFFRES ───────────────────────────────────────────────────────
     with tab2:
         st.markdown("""<div style="background:#050f00;border:1px solid #336600;border-radius:12px;
-          padding:0.75rem 1rem;margin-bottom:1rem;animation:fadeInDown 0.5s ease both;">
+          padding:0.75rem 1rem;margin-bottom:1rem;">
           <p style="color:#77dd22;font-weight:700;margin:0;font-size:0.85rem;">
             🎁 Offres conçues pour booster tes ventes — Marché Africain Francophone
           </p></div>""", unsafe_allow_html=True)
@@ -864,93 +831,62 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         if not offres_list:
             st.warning("⚠️ Aucune offre générée. Relance une analyse.")
         for i, o in enumerate(offres_list):
-            offre_txt = f"{o.get('nom','')}\n{o.get('description','')}\nPrix : {o.get('prix_suggere','')}"
-            st.markdown(f"""<div class="offre-card">
-              <div class="offre-titre">🎁 {o.get('nom','')}</div>
-              <div class="offre-desc">{o.get('description','')}</div>
-              <div class="offre-prix">💰 {o.get('prix_suggere','')} · {o.get('argument','')}</div>
-            </div>""", unsafe_allow_html=True)
-            copy_block(offre_txt, f"📋 Copier Offre {i+1}")
+            offre_txt = f"{o.get('nom','')}\nDescription : {o.get('description','')}\nPrix : {o.get('prix_suggere','')}\nArgument : {o.get('argument','')}"
+            card_title(f"🎁 Offre {i+1} — {o.get('nom','')}")
+            st.code(offre_txt, language=None)
 
     # ── TAB 3 : SHOPIFY ──────────────────────────────────────────────────────
     with tab3:
         shopify = data.get("shopify", {})
+        titres  = shopify.get("titres", [])
+        paras   = shopify.get("paragraphes", [])
 
-        # 3 TITRES
-        titres_txt = "\n".join([t.get("titre", "") for t in shopify.get("titres", [])])
-        st.markdown(f"""<div class="result-card">
-          {section_header("🏷️ 3 Titres Magnétiques")}
-        """, unsafe_allow_html=True)
-        for i, t in enumerate(shopify.get("titres", [])):
-            st.markdown(f"""<div class="titre-option">
-              <div class="num">Option {i+1} — {t.get("angle","")}</div>
-              <div class="texte">{t.get("titre","")}</div>
-            </div>""", unsafe_allow_html=True)
-            copy_block(t.get("titre",""), f"📋 Copier Titre {i+1}")
-        st.markdown('</div>', unsafe_allow_html=True)
-        copy_block(titres_txt, "📋 Copier les 3 titres")
+        card_title("🏷️ 3 Titres Magnétiques — choisissez le meilleur")
+        for i, t in enumerate(titres):
+            st.code(f"Option {i+1} [{t.get('angle','')}]\n{t.get('titre','')}", language=None)
 
-        # 6 PARAGRAPHES
+        st.markdown("<hr style='border-color:#2a3140;margin:1.2rem 0;'>", unsafe_allow_html=True)
+
+        card_title("📝 Fiche Produit Shopify — 6 Paragraphes (4 phrases max)")
+        for j, para in enumerate(paras):
+            bloc = f"{para.get('titre','')}\n\n{para.get('texte','')}"
+            st.code(bloc, language=None)
+
+        # Copier tout d'un coup
         all_paras_txt = "\n\n".join([
-            f"{p.get('titre','')}\n{p.get('texte','')}"
-            for p in shopify.get("paragraphes", [])
+            f"{p.get('titre','')}\n{p.get('texte','')}" for p in paras
         ])
-        st.markdown(f"""<div class="result-card">
-          {section_header("📝 Fiche Produit — 6 Paragraphes")}
-        """, unsafe_allow_html=True)
-        for j, para in enumerate(shopify.get("paragraphes", [])):
-            para_txt   = f"{para.get('titre','')}\n{para.get('texte','')}"
-            texte_html = para.get("texte","").replace("\n", "<br>")
-            st.markdown(f"""<div class="para-card">
-              <div class="para-titre">{para.get("titre","")}</div>
-              <div class="para-texte">{texte_html}</div>
-            </div>""", unsafe_allow_html=True)
-            copy_block(para_txt, f"📋 Copier §{j+1}")
-        st.markdown('</div>', unsafe_allow_html=True)
-        copy_block(all_paras_txt, "📋 Copier les 6 paragraphes complets")
+        card_title("📦 Copier la fiche complète (6 paragraphes)")
+        st.code(all_paras_txt, language=None)
 
     # ── TAB 4 : FACEBOOK ADS ─────────────────────────────────────────────────
     with tab4:
-        st.markdown("""<div style="background:#0e0000;border:1px solid #330000;border-radius:10px;
-          padding:0.65rem 1rem;margin-bottom:1rem;animation:fadeInDown 0.5s ease both;">
-          <p style="color:#888;font-size:0.78rem;margin:0;">
-            💡 3 variantes · 1 titre choc + texte max 5 lignes · Prêtes pour Facebook Ads Manager
-          </p></div>""", unsafe_allow_html=True)
-
         fb_ads = data.get("facebook_ads", [])
-
-        # ── Diagnostic si vide ──────────────────────────────────────────────
         if not fb_ads:
-            st.error("⚠️ Les Facebook Ads n'ont pas été générées (JSON tronqué ou clé manquante).")
-            st.info("💡 Relance l'analyse — le modèle a parfois besoin d'une seconde tentative.")
-            # Affiche le contenu brut pour debug
-            with st.expander("🔍 Debug — contenu reçu de l'IA"):
+            st.error("⚠️ Facebook Ads vides — JSON tronqué. Relance l'analyse.")
+            with st.expander("🔍 Debug JSON reçu"):
                 st.json(data)
         else:
+            st.markdown("""<div style="background:#0e0000;border:1px solid #330000;border-radius:10px;
+              padding:0.65rem 1rem;margin-bottom:1rem;">
+              <p style="color:#888;font-size:0.78rem;margin:0;">
+                💡 3 variantes prêtes · Copie le bloc et colle dans Facebook Ads Manager
+              </p></div>""", unsafe_allow_html=True)
             for i, ad in enumerate(fb_ads):
-                accroche   = ad.get("accroche", ad.get("titre", ad.get("headline", "")))
-                texte      = ad.get("texte", ad.get("text", ad.get("body", ad.get("contenu", ""))))
-                angle      = ad.get("angle", f"Variante {i+1}")
-                full       = f"{accroche}\n\n{texte}"
-                texte_html = texte.replace("\n", "<br>")
-                st.markdown(f"""<div class="ad-block">
-                  <div style="margin-bottom:0.5rem;">
-                    <span style="color:#D90429;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
-                      📣 Variante {i+1} — {angle}
-                    </span>
-                  </div>
-                  <div class="ad-accroche">{accroche}</div>
-                  <div class="ad-texte">{texte_html}</div>
-                </div>""", unsafe_allow_html=True)
-                copy_block(full, f"📋 Copier Variante {i+1}")
+                accroche = ad.get("accroche", ad.get("titre", ad.get("headline", "")))
+                texte    = ad.get("texte",    ad.get("text",  ad.get("body",     ad.get("contenu", ""))))
+                angle    = ad.get("angle", f"Variante {i+1}")
+                full     = f"{accroche}\n\n{texte}"
+                card_title(f"📣 Variante {i+1} — {angle}")
+                st.code(full, language=None)
 
     # ── TAB 5 : VOIX-OFF ─────────────────────────────────────────────────────
     with tab5:
         type_label = "⚡ PRODUIT WOW" if type_produit == "wow" else "🎯 PROBLÈME-SOLUTION"
         st.markdown(f"""<div style="background:#0e0000;border:1px solid #330000;border-radius:10px;
-          padding:0.65rem 1rem;margin-bottom:1rem;animation:fadeInDown 0.5s ease both;">
+          padding:0.65rem 1rem;margin-bottom:1rem;">
           <p style="color:#D90429;font-weight:700;margin:0;font-size:0.82rem;">
-            Type : {type_label} · ~130 mots · Bloc fluide prêt à lire en voix-off
+            Type : {type_label} · ~130 mots · Copie le script et enregistre ta voix-off
           </p></div>""", unsafe_allow_html=True)
 
         scripts = data.get("scripts", [])
@@ -959,24 +895,15 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         for i, script in enumerate(scripts):
             texte_script = script.get("texte_complet", script.get("texte", ""))
             word_count   = len(texte_script.split())
-            st.markdown(f"""<div class="script-block">
-              <div style="display:flex;justify-content:space-between;align-items:center;
-                          margin-bottom:0.6rem;padding-bottom:0.4rem;border-bottom:1px solid #2a3140;">
-                <span class="script-label" style="margin:0;border:none;padding:0;">
-                  🎙️ {script.get("angle",f"Script {i+1}")}
-                </span>
-                <span style="color:#444;font-size:0.65rem;">{word_count} mots</span>
-              </div>
-              <div class="script-texte">{texte_script}</div>
-            </div>""", unsafe_allow_html=True)
-            copy_block(texte_script, f"📋 Copier Script {i+1}")
+            card_title(f"🎙️ {script.get('angle', f'Script {i+1}')} · {word_count} mots")
+            st.code(texte_script, language=None)
 
     # ── EXPORT ───────────────────────────────────────────────────────────────
     st.markdown("---")
     export_txt = build_export(aname, aprice, apmin, apmax, data)
     st.markdown("""<div class="export-section">
       <p style="color:#D90429;font-weight:800;font-size:1rem;margin:0 0 0.25rem;">📦 Pack Marketing Complet</p>
-      <p style="color:#444;font-size:0.8rem;margin:0 0 1rem;">Toute l'analyse exportée en fichier .txt prêt à l'emploi</p>
+      <p style="color:#444;font-size:0.8rem;margin:0 0 1rem;">Toute l'analyse en un fichier .txt prêt à l'emploi</p>
     </div>""", unsafe_allow_html=True)
     st.download_button(
         label="⬇️ TÉLÉCHARGER MON PACK MARKETING (.txt)",
