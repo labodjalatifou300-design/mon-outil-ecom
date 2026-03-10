@@ -21,15 +21,75 @@ st.set_page_config(
     layout="wide",
 )
 
+# ── INJECTION META DARK MODE (mobile Safari + Chrome) ──────────────
+st.markdown("""
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0d1117">
+""", unsafe_allow_html=True)
+
 st.markdown("""
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
-  html, body, [class*="css"] {
+
+  /* DARK MODE FORCÉ — PC + Mobile (iPhone, Android) */
+  :root {
+    color-scheme: dark !important;
+    --background-color: #0d1117 !important;
+  }
+
+  html, body,
+  [class*="css"], [data-testid], .stApp,
+  .appview-container, .appview-container > section,
+  .block-container, .main {
     font-family: 'Inter', sans-serif !important;
-    background-color: #0e1117 !important;
+    background-color: #0d1117 !important;
     color: #F0F0F0 !important;
   }
-  .main { background-color: #0e1117 !important; }
+
+  /* ── NEUTRALISE LE THÈME CLAIR DU TÉLÉPHONE — règle absolue ── */
+  /* S'applique quand le téléphone est en mode clair (iOS/Android) */
+  @media (prefers-color-scheme: light) {
+    html, body,
+    .stApp, .stApp > div,
+    .main, .block-container,
+    .appview-container,
+    .appview-container > section,
+    section[data-testid="stSidebar"],
+    [class*="css"],
+    [data-testid],
+    [data-testid="stAppViewContainer"],
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],
+    [data-testid="stVerticalBlock"],
+    [data-testid="stHorizontalBlock"],
+    .element-container,
+    .stMarkdown, .stText, .stTitle,
+    div, section, header, footer, aside {
+      background-color: #0d1117 !important;
+      color: #F0F0F0 !important;
+    }
+  }
+
+  /* st.code() — bouton copier rouge + fond sombre mobile */
+  .stCodeBlock, pre, code,
+  [data-testid="stCode"] > div,
+  [data-testid="stCode"] pre {
+    background-color: #161b22 !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #2a3140 !important;
+    border-radius: 8px !important;
+  }
+  [data-testid="stCode"] button,
+  [data-testid="stCode"] button:hover {
+    background: #D90429 !important;
+    color: white !important;
+    border-radius: 6px !important;
+    opacity: 1 !important;
+  }
+
+  .main { background-color: #0d1117 !important; }
   .block-container { padding-top: 1.5rem !important; max-width: 1100px !important; padding-left: 1rem !important; padding-right: 1rem !important; }
   section[data-testid="stSidebar"] { background-color: #0a0d12 !important; border-right: 1px solid #1e2530 !important; }
 
@@ -132,7 +192,7 @@ st.markdown("""
     display: inline-flex; align-items: center; justify-content: center;
     width: 100px; height: 100px; border-radius: 50%;
     border: 4px solid #D90429; font-size: 2.2rem; font-weight: 900;
-    color: #FFF; background: radial-gradient(circle,#2d0000,#0e1117);
+    color: #FFF; background: radial-gradient(circle,#2d0000,#0d1117);
     margin: 0 auto 0.75rem; animation: glow 2.5s infinite;
   }
   .wow-badge { display:inline-block; background:linear-gradient(135deg,#ff5500,#D90429); color:white; font-weight:800; font-size:0.75rem; padding:4px 14px; border-radius:20px; letter-spacing:1.5px; text-transform:uppercase; animation: fadeInUp 0.7s ease both; }
@@ -168,7 +228,7 @@ st.markdown("""
   /* TABLEAU RENTABILITÉ */
   .gains-table { width:100%; border-collapse:collapse; margin-top:0.5rem; font-size:clamp(0.7rem,2vw,0.83rem); }
   .gains-table th { background:#D90429; color:white; padding:8px 10px; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.8px; text-align:center; }
-  .gains-table td { background:#0e1117; color:#CCC; padding:9px 10px; text-align:center; border-bottom:1px solid #1e2530; transition: background 0.2s; }
+  .gains-table td { background:#0d1117; color:#CCC; padding:9px 10px; text-align:center; border-bottom:1px solid #1e2530; transition: background 0.2s; }
   .gains-table tr:hover td { background:#161b22; color:#FFF; }
   .gains-table .pos { color:#44dd88; font-weight:700; }
   .gains-table .neg { color:#ff4444; font-weight:700; }
@@ -177,7 +237,7 @@ st.markdown("""
 
   /* TITRES SHOPIFY */
   .titre-option {
-    background:#0e1117; border:1px solid #2a3140; border-radius:12px;
+    background:#0d1117; border:1px solid #2a3140; border-radius:12px;
     padding:0.9rem 1.1rem; margin-bottom:0.6rem;
     transition: all 0.25s ease; animation: fadeInLeft 0.5s ease both;
   }
@@ -187,7 +247,7 @@ st.markdown("""
 
   /* PARAGRAPHES SHOPIFY */
   .para-card {
-    background:#0e1117; border-left:4px solid #D90429; border-radius:0 12px 12px 0;
+    background:#0d1117; border-left:4px solid #D90429; border-radius:0 12px 12px 0;
     padding:1rem 1.2rem; margin-bottom:0.75rem;
     transition: all 0.25s ease; animation: fadeInUp 0.5s ease both;
   }
