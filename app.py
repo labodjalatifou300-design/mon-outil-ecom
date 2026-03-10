@@ -231,6 +231,29 @@ st.markdown("""
 
   .export-section { background:linear-gradient(135deg,#0a0000,#150000); border:2px solid #D90429; border-radius:16px; padding:1.4rem; margin-top:2rem; text-align:center; animation: fadeInUp 0.6s ease both; }
 
+  /* ZONES DE COPIE (st.text_area) */
+  .stTextArea textarea {
+    background-color: #0a0d12 !important;
+    color: #44dd88 !important;
+    border: 1px dashed #2a3140 !important;
+    border-radius: 8px !important;
+    font-family: 'DM Mono', 'Courier New', monospace !important;
+    font-size: 0.78rem !important;
+    line-height: 1.6 !important;
+    resize: none !important;
+  }
+  .stTextArea textarea:focus {
+    border-color: #44dd88 !important;
+    box-shadow: 0 0 0 2px rgba(68,221,136,0.15) !important;
+  }
+  .stTextArea label {
+    color: #555 !important;
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+  }
+
   #MainMenu, footer, header { visibility:hidden; }
   label { color:#AAAAAA !important; font-weight:600 !important; font-size:0.83rem !important; }
 
@@ -297,21 +320,26 @@ function copyText(text, btnId) {
 
 # ── UTILITAIRES ───────────────────────────────────────────────────────────────
 
-def make_copy_btn(text, uid):
-    escaped = (text
-        .replace("\\", "\\\\")
-        .replace("`",  "\\`")
-        .replace("'",  "\\'")
-        .replace("\n", "\\n")
-        .replace("\r", ""))
-    return (f'<button class="copy-btn" id="cpbtn_{uid}" '
-            f'onclick="copyText(\'{escaped}\',\'cpbtn_{uid}\')">📋 Copier</button>')
-
-def section_header(title, copy_text_val, uid):
+def section_header(title):
+    """Entête de carte — le bouton copier est remplacé par st.code() natif."""
     return (f'<div class="card-header">'
             f'<span class="card-title">{title}</span>'
-            f'{make_copy_btn(copy_text_val, uid)}'
             f'</div>')
+
+def copy_block(text: str, label: str = "📋 Copier"):
+    """
+    Zone de texte sélectionnable — 100% fiable PC, iPhone, Android.
+    Ctrl+A ou appui long -> Tout sélectionner -> Copier.
+    """
+    lines  = max(2, min(6, text.count("\n") + 1))
+    height = lines * 26 + 16
+    st.text_area(
+        label,
+        value=text,
+        height=height,
+        key=f"copy_{hash(text) & 0xFFFFFF}_{label[:10]}",
+        help="Clic dans la zone → Ctrl+A (PC) ou appui long (mobile) → Copier"
+    )
 
 def save_to_history(name, score, data, prix_achat):
     entry = {
@@ -530,6 +558,11 @@ Réponds UNIQUEMENT avec du JSON valide. Aucun texte avant ni après. Aucun comm
     {{"nom": "Nom offre 2", "description": "Contenu", "prix_suggere": "XXXX FCFA", "argument": "Argument"}},
     {{"nom": "Nom offre 3", "description": "Contenu", "prix_suggere": "XXXX FCFA", "argument": "Argument"}}
   ],
+  "facebook_ads": [
+    {{"angle": "Émotionnel",    "accroche": "🔥 TITRE CHOC ÉMOTIONNEL ICI",        "texte": "ligne 1\\nligne 2\\nligne 3\\nligne 4\\nligne 5 — fun, emojis, contexte africain"}},
+    {{"angle": "Preuve Sociale","accroche": "⭐ TITRE TÉMOIGNAGE AFRICAIN ICI",    "texte": "ligne 1\\nligne 2\\nligne 3\\nligne 4\\nligne 5 — preuve sociale locale"}},
+    {{"angle": "Urgence",       "accroche": "⚠️ STOCK LIMITÉ — COMMANDE VITE",    "texte": "ligne 1\\nligne 2\\nligne 3\\nligne 4\\nligne 5 — urgence et offre limitée"}}
+  ],
   "shopify": {{
     "titres": [
       {{"angle": "Bénéfice Principal", "titre": "Titre page produit 1 — accrocheur"}},
@@ -545,11 +578,6 @@ Réponds UNIQUEMENT avec du JSON valide. Aucun texte avant ni après. Aucun comm
       {{"titre": "Titre §6 accrocheur en gras", "texte": "Phrase 1.\\nPhrase 2.\\nPhrase 3.\\nPhrase 4."}}
     ]
   }},
-  "facebook_ads": [
-    {{"angle": "Émotionnel",    "accroche": "🔥 TITRE CHOC ÉMOTIONNEL ICI",        "texte": "ligne 1\\nligne 2\\nligne 3\\nligne 4\\nligne 5 — fun, emojis, contexte africain"}},
-    {{"angle": "Preuve Sociale","accroche": "⭐ TITRE TÉMOIGNAGE AFRICAIN ICI",    "texte": "ligne 1\\nligne 2\\nligne 3\\nligne 4\\nligne 5 — preuve sociale locale"}},
-    {{"angle": "Urgence",       "accroche": "⚠️ STOCK LIMITÉ — COMMANDE VITE",    "texte": "ligne 1\\nligne 2\\nligne 3\\nligne 4\\nligne 5 — urgence et offre limitée"}}
-  ],
   "scripts": [
     {{"angle": "Script Émotionnel",      "texte_complet": "Texte fluide ENVIRON 130 MOTS, sans aucune balise, naturel et humain, adapté marché africain"}},
     {{"angle": "Script Bénéfice Direct", "texte_complet": "Texte fluide ENVIRON 130 MOTS, angle différent, preuve sociale africaine"}},
@@ -558,6 +586,88 @@ Réponds UNIQUEMENT avec du JSON valide. Aucun texte avant ni après. Aucun comm
 }}"""
 
 # ── API GROQ ──────────────────────────────────────────────────────────────────
+def repair_json(raw: str) -> dict:
+    """
+    Parse JSON robuste :
+    1. Tente json.loads direct
+    2. Si troncature (JSON incomplet), répare en fermant les structures ouvertes
+    """
+    # Nettoyage markdown
+    raw = re.sub(r"^```(?:json)?\s*", "", raw.strip())
+    raw = re.sub(r"\s*```$", "", raw)
+    raw = raw.strip()
+
+    # Tentative directe
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    # Réparation : trouver la dernière virgule propre et refermer
+    # Stratégie : couper après le dernier élément complet, refermer les }] manquants
+    # On compte les accolades/crochets ouverts non fermés
+    stack = []
+    last_valid_pos = 0
+    in_string = False
+    escape_next = False
+
+    for idx, ch in enumerate(raw):
+        if escape_next:
+            escape_next = False
+            continue
+        if ch == '\\' and in_string:
+            escape_next = True
+            continue
+        if ch == '"' and not escape_next:
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch in ('{', '['):
+            stack.append(ch)
+        elif ch in ('}', ']'):
+            if stack:
+                stack.pop()
+                last_valid_pos = idx + 1
+
+    # Fermer ce qui reste ouvert
+    closing = ""
+    for bracket in reversed(stack):
+        closing += '}' if bracket == '{' else ']'
+
+    repaired = raw[:last_valid_pos] + closing
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        # Dernier recours : extraire uniquement les champs clés présents
+        partial = {}
+        for key in ["score","score_justification","type_produit","ameliorations",
+                    "public_cible","peurs","desirs","mots_cles","offres",
+                    "shopify","facebook_ads","scripts"]:
+            pattern = rf'"{key}"\s*:\s*'
+            m = re.search(pattern, raw)
+            if m:
+                # Extrait la valeur brute (best-effort)
+                start = m.end()
+                ch0 = raw[start:start+1]
+                if ch0 in ('"', '{', '['):
+                    end_map = {'"': '"', '{': '}', '[': ']'}
+                    depth = 0
+                    in_s  = False
+                    for j, c in enumerate(raw[start:], start):
+                        if c == '"' and raw[j-1:j] != '\\':
+                            in_s = not in_s
+                        if not in_s:
+                            if c in ('{','['): depth += 1
+                            elif c in ('}',']'): depth -= 1
+                            if depth == 0:
+                                try:
+                                    partial[key] = json.loads(raw[start:j+1])
+                                except Exception:
+                                    pass
+                                break
+        return partial if partial else {}
+
 def call_groq(prompt, images):
     from groq import Groq
     client  = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -569,12 +679,10 @@ def call_groq(prompt, images):
     response = client.chat.completions.create(
         model="meta-llama/llama-4-scout-17b-16e-instruct",
         messages=[{"role": "user", "content": content}],
-        max_tokens=4500,
+        max_tokens=7000,          # ← augmenté pour éviter la troncature du JSON
     )
     raw = response.choices[0].message.content.strip()
-    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-    raw = re.sub(r"\s*```$", "", raw)
-    return json.loads(raw)
+    return repair_json(raw)
 
 # ── LANCEMENT ANALYSE ─────────────────────────────────────────────────────────
 if analyze_clicked:
@@ -647,17 +755,19 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         with c2:
             verdict = data.get("score_justification", "")
             st.markdown(f"""<div class="result-card">
-              {section_header("💡 Verdict IA", verdict, "verdict")}
+              {section_header("💡 Verdict IA")}
               <p style="line-height:1.75;font-size:0.88rem;color:#CCC;">{verdict}</p>
             </div>""", unsafe_allow_html=True)
+            copy_block(verdict, "📋 Copier le verdict")
 
         if score < 9:
             amelios = data.get("ameliorations", [])
             amelios_txt = "\n".join([f"- {a}" for a in amelios])
             st.markdown(f"""<div class="amelioration-card">
-              {section_header("⚠️ Comment Booster ce Produit ?", amelios_txt, "amelio")}
+              {section_header("⚠️ Comment Booster ce Produit ?")}
               {"".join([f'<p style="margin:0.3rem 0;font-size:0.86rem;color:#CCC;">🔧 {a}</p>' for a in amelios])}
             </div>""", unsafe_allow_html=True)
+            copy_block(amelios_txt, "📋 Copier les conseils")
 
         st.markdown(f"""<div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin-bottom:1rem;">
           <div class="metric-item"><div class="m-label">Budget Pub</div><div class="m-value red">{get_pub_budget(aventes)}</div></div>
@@ -693,11 +803,8 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
           <table class="gains-table">
             <thead>
               <tr>
-                <th>Ventes</th>
-                <th>Budget Pub</th>
-                <th>CA</th>
-                <th>Coût Global</th>
-                <th>Bénéfice Net</th>
+                <th>Ventes</th><th>Budget Pub</th><th>CA</th>
+                <th>Coût Global</th><th>Bénéfice Net</th>
               </tr>
             </thead>
             <tbody>{rows_html}</tbody>
@@ -712,22 +819,25 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             peurs     = data.get("peurs", [])
             peurs_txt = "\n".join(peurs)
             st.markdown(f"""<div class="result-card">
-              {section_header("😰 Peurs du Client", peurs_txt, "peurs")}
+              {section_header("😰 Peurs du Client")}
               {"".join([f'<p style="margin:0.3rem 0;font-size:0.86rem;">🔴 {p}</p>' for p in peurs])}
             </div>""", unsafe_allow_html=True)
+            copy_block(peurs_txt, "📋 Copier les peurs")
         with cd_col:
             desirs     = data.get("desirs", [])
             desirs_txt = "\n".join(desirs)
             st.markdown(f"""<div class="result-card">
-              {section_header("✨ Désirs du Client", desirs_txt, "desirs")}
+              {section_header("✨ Désirs du Client")}
               {"".join([f'<p style="margin:0.3rem 0;font-size:0.86rem;">💚 {d}</p>' for d in desirs])}
             </div>""", unsafe_allow_html=True)
+            copy_block(desirs_txt, "📋 Copier les désirs")
 
         public = data.get("public_cible", "")
         st.markdown(f"""<div class="result-card">
-          {section_header("🎯 Public Cible", public, "public")}
+          {section_header("🎯 Public Cible")}
           <p style="line-height:1.8;font-size:0.88rem;color:#CCC;">{public}</p>
         </div>""", unsafe_allow_html=True)
+        copy_block(public, "📋 Copier le public cible")
 
         mots = data.get("mots_cles", [])
         if mots:
@@ -737,9 +847,10 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
                 for m in mots
             ])
             st.markdown(f"""<div class="result-card">
-              {section_header("🔍 Mots-Clés", " · ".join(mots), "mots")}
+              {section_header("🔍 Mots-Clés")}
               <div>{badges}</div>
             </div>""", unsafe_allow_html=True)
+            copy_block(" · ".join(mots), "📋 Copier les mots-clés")
 
     # ── TAB 2 : OFFRES ───────────────────────────────────────────────────────
     with tab2:
@@ -749,16 +860,17 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             🎁 Offres conçues pour booster tes ventes — Marché Africain Francophone
           </p></div>""", unsafe_allow_html=True)
 
-        for i, o in enumerate(data.get("offres", [])):
+        offres_list = data.get("offres", [])
+        if not offres_list:
+            st.warning("⚠️ Aucune offre générée. Relance une analyse.")
+        for i, o in enumerate(offres_list):
             offre_txt = f"{o.get('nom','')}\n{o.get('description','')}\nPrix : {o.get('prix_suggere','')}"
             st.markdown(f"""<div class="offre-card">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.35rem;">
-                <div class="offre-titre">🎁 {o.get('nom','')}</div>
-                {make_copy_btn(offre_txt, f"offre_{i}")}
-              </div>
+              <div class="offre-titre">🎁 {o.get('nom','')}</div>
               <div class="offre-desc">{o.get('description','')}</div>
               <div class="offre-prix">💰 {o.get('prix_suggere','')} · {o.get('argument','')}</div>
             </div>""", unsafe_allow_html=True)
+            copy_block(offre_txt, f"📋 Copier Offre {i+1}")
 
     # ── TAB 3 : SHOPIFY ──────────────────────────────────────────────────────
     with tab3:
@@ -767,17 +879,16 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         # 3 TITRES
         titres_txt = "\n".join([t.get("titre", "") for t in shopify.get("titres", [])])
         st.markdown(f"""<div class="result-card">
-          {section_header("🏷️ 3 Titres Magnétiques", titres_txt, "all_titres")}
+          {section_header("🏷️ 3 Titres Magnétiques")}
         """, unsafe_allow_html=True)
         for i, t in enumerate(shopify.get("titres", [])):
-            st.markdown(f"""
-            <div class="titre-option">
+            st.markdown(f"""<div class="titre-option">
               <div class="num">Option {i+1} — {t.get("angle","")}</div>
               <div class="texte">{t.get("titre","")}</div>
-            </div>
-            <div class="copy-area">{make_copy_btn(t.get("titre",""), f"titre_{i}")}</div>
-            """, unsafe_allow_html=True)
+            </div>""", unsafe_allow_html=True)
+            copy_block(t.get("titre",""), f"📋 Copier Titre {i+1}")
         st.markdown('</div>', unsafe_allow_html=True)
+        copy_block(titres_txt, "📋 Copier les 3 titres")
 
         # 6 PARAGRAPHES
         all_paras_txt = "\n\n".join([
@@ -785,19 +896,18 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             for p in shopify.get("paragraphes", [])
         ])
         st.markdown(f"""<div class="result-card">
-          {section_header("📝 Fiche Produit — 6 Paragraphes", all_paras_txt, "all_paras")}
+          {section_header("📝 Fiche Produit — 6 Paragraphes")}
         """, unsafe_allow_html=True)
         for j, para in enumerate(shopify.get("paragraphes", [])):
             para_txt   = f"{para.get('titre','')}\n{para.get('texte','')}"
             texte_html = para.get("texte","").replace("\n", "<br>")
             st.markdown(f"""<div class="para-card">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;">
-                <div class="para-titre">{para.get("titre","")}</div>
-                {make_copy_btn(para_txt, f"para_{j}")}
-              </div>
+              <div class="para-titre">{para.get("titre","")}</div>
               <div class="para-texte">{texte_html}</div>
             </div>""", unsafe_allow_html=True)
+            copy_block(para_txt, f"📋 Copier §{j+1}")
         st.markdown('</div>', unsafe_allow_html=True)
+        copy_block(all_paras_txt, "📋 Copier les 6 paragraphes complets")
 
     # ── TAB 4 : FACEBOOK ADS ─────────────────────────────────────────────────
     with tab4:
@@ -807,21 +917,32 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             💡 3 variantes · 1 titre choc + texte max 5 lignes · Prêtes pour Facebook Ads Manager
           </p></div>""", unsafe_allow_html=True)
 
-        for i, ad in enumerate(data.get("facebook_ads", [])):
-            accroche   = ad.get("accroche", "")
-            texte      = ad.get("texte", "")
-            full       = f"{accroche}\n\n{texte}"
-            texte_html = texte.replace("\n", "<br>")
-            st.markdown(f"""<div class="ad-block">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
-                <span style="color:#D90429;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
-                  📣 Variante {i+1} — {ad.get("angle","")}
-                </span>
-                {make_copy_btn(full, f"ad_{i}")}
-              </div>
-              <div class="ad-accroche">{accroche}</div>
-              <div class="ad-texte">{texte_html}</div>
-            </div>""", unsafe_allow_html=True)
+        fb_ads = data.get("facebook_ads", [])
+
+        # ── Diagnostic si vide ──────────────────────────────────────────────
+        if not fb_ads:
+            st.error("⚠️ Les Facebook Ads n'ont pas été générées (JSON tronqué ou clé manquante).")
+            st.info("💡 Relance l'analyse — le modèle a parfois besoin d'une seconde tentative.")
+            # Affiche le contenu brut pour debug
+            with st.expander("🔍 Debug — contenu reçu de l'IA"):
+                st.json(data)
+        else:
+            for i, ad in enumerate(fb_ads):
+                accroche   = ad.get("accroche", ad.get("titre", ad.get("headline", "")))
+                texte      = ad.get("texte", ad.get("text", ad.get("body", ad.get("contenu", ""))))
+                angle      = ad.get("angle", f"Variante {i+1}")
+                full       = f"{accroche}\n\n{texte}"
+                texte_html = texte.replace("\n", "<br>")
+                st.markdown(f"""<div class="ad-block">
+                  <div style="margin-bottom:0.5rem;">
+                    <span style="color:#D90429;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;">
+                      📣 Variante {i+1} — {angle}
+                    </span>
+                  </div>
+                  <div class="ad-accroche">{accroche}</div>
+                  <div class="ad-texte">{texte_html}</div>
+                </div>""", unsafe_allow_html=True)
+                copy_block(full, f"📋 Copier Variante {i+1}")
 
     # ── TAB 5 : VOIX-OFF ─────────────────────────────────────────────────────
     with tab5:
@@ -832,22 +953,23 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             Type : {type_label} · ~130 mots · Bloc fluide prêt à lire en voix-off
           </p></div>""", unsafe_allow_html=True)
 
-        for i, script in enumerate(data.get("scripts", [])):
-            texte_script = script.get("texte_complet", "")
+        scripts = data.get("scripts", [])
+        if not scripts:
+            st.warning("⚠️ Scripts non générés. Relance l'analyse.")
+        for i, script in enumerate(scripts):
+            texte_script = script.get("texte_complet", script.get("texte", ""))
             word_count   = len(texte_script.split())
             st.markdown(f"""<div class="script-block">
               <div style="display:flex;justify-content:space-between;align-items:center;
                           margin-bottom:0.6rem;padding-bottom:0.4rem;border-bottom:1px solid #2a3140;">
                 <span class="script-label" style="margin:0;border:none;padding:0;">
-                  🎙️ {script.get("angle","")}
+                  🎙️ {script.get("angle",f"Script {i+1}")}
                 </span>
-                <div style="display:flex;align-items:center;gap:0.5rem;">
-                  <span style="color:#444;font-size:0.65rem;">{word_count} mots</span>
-                  {make_copy_btn(texte_script, f"script_{i}")}
-                </div>
+                <span style="color:#444;font-size:0.65rem;">{word_count} mots</span>
               </div>
               <div class="script-texte">{texte_script}</div>
             </div>""", unsafe_allow_html=True)
+            copy_block(texte_script, f"📋 Copier Script {i+1}")
 
     # ── EXPORT ───────────────────────────────────────────────────────────────
     st.markdown("---")
