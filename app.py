@@ -491,21 +491,10 @@ def card_title(title: str):
 
 def content_block(text: str, border_color: str = "#2a3140"):
     """
-    Affiche le texte en bloc visuel aéré (multilignes, paragraphes)
-    + bouton copier natif Streamlit en dessous.
-    Respecte les \n — chaque retour à la ligne est préservé.
+    Affiche le texte en bloc multilignes aéré avec bouton copier intégré.
+    st.code() préserve les \n et fournit le bouton copier natif Streamlit.
+    PAS de duplication — un seul affichage.
     """
-    # Convertir \n en <br> pour affichage HTML propre
-    html_text = str(text).replace("\n", "<br>")
-    st.markdown(
-        f'''<div style="border:1px solid {border_color};border-radius:12px;
-            padding:1rem 1.2rem;margin-bottom:0.4rem;line-height:1.95;
-            color:#DDD;font-size:0.88rem;font-family:'Space Grotesk',sans-serif;">
-            {html_text}
-        </div>''',
-        unsafe_allow_html=True
-    )
-    # Bouton copier natif (fonctionne PC + mobile)
     st.code(text, language=None)
 
 # section_header gardé pour compatibilité avec le HTML des cartes visuelles (score, tableau, etc.)
@@ -532,6 +521,62 @@ def get_pub_budget(v):
     if v <= 10:  return "5$–7$/jour"
     elif v <= 20: return "7$–10$/jour"
     else:         return "15$–20$/jour"
+
+def calc_score_produit(prix_achat: int, prix_vente_moy: float, data: dict) -> dict:
+    """
+    Calcule le score produit selon 5 critères LABO :
+    1. Masse de marché potentielle (le produit peut-il toucher beaucoup de monde ?)
+    2. Attractivité du prix (rapport qualité/prix perçu en Afrique)
+    3. Potentiel de créatives / facilité de trouver des vidéos
+    4. Potentiel d'offres commerciales
+    5. Score IA de base (analyse qualitative du produit)
+    """
+    score_ia = int(data.get("score", 7))
+    type_p   = data.get("type_produit", "wow")
+
+    # Critère 1 — Masse de marché (basé sur catégorie avatar)
+    categ = data.get("avatar", {}).get("categorie", "")
+    masse_map = {
+        "Domestique": 9, "Santé": 9, "Beauté & Soins": 8, "Alimentation": 9,
+        "Tech": 7, "Mode": 7, "Agriculture": 6, "Élevage": 5,
+        "Pêche": 4, "Luxe": 4, "Autre": 6
+    }
+    c1 = masse_map.get(categ, 6)
+
+    # Critère 2 — Prix attractif (fourchette idéale Afrique : 5 000–20 000 FCFA)
+    if prix_vente_moy <= 8000:   c2 = 10
+    elif prix_vente_moy <= 12000: c2 = 9
+    elif prix_vente_moy <= 18000: c2 = 8
+    elif prix_vente_moy <= 25000: c2 = 7
+    elif prix_vente_moy <= 35000: c2 = 5
+    else:                         c2 = 3
+
+    # Critère 3 — Potentiel créatives/vidéos (WOW = facile à filmer)
+    c3 = 9 if type_p == "wow" else 7
+
+    # Critère 4 — Potentiel d'offres (peurs + désirs présents = offres faciles)
+    nb_peurs  = len(data.get("peurs",  []))
+    nb_desirs = len(data.get("desirs", []))
+    c4 = min(10, 5 + nb_peurs + nb_desirs)
+
+    # Critère 5 — Score IA base
+    c5 = score_ia
+
+    # Moyenne pondérée
+    score_final = round((c1*0.25 + c2*0.25 + c3*0.20 + c4*0.15 + c5*0.15), 1)
+    score_final = max(1.0, min(10.0, score_final))
+
+    return {
+        "score_final":  score_final,
+        "score_int":    round(score_final),
+        "criteres": [
+            {"nom": "Masse de marché",      "note": c1, "desc": f"Catégorie : {categ}"},
+            {"nom": "Attractivité du prix", "note": c2, "desc": f"Prix moy : {prix_vente_moy:,.0f} FCFA"},
+            {"nom": "Potentiel créatives",  "note": c3, "desc": "WOW = facile à filmer" if type_p=="wow" else "Problème-solution"},
+            {"nom": "Potentiel d'offres",   "note": c4, "desc": f"{nb_peurs} peurs + {nb_desirs} désirs identifiés"},
+            {"nom": "Analyse IA",           "note": c5, "desc": "Score qualitatif IA"},
+        ]
+    }
 
 def calc_rentabilite(ventes, prix_moyen, prix_achat):
     """
@@ -723,10 +768,20 @@ CONTRAINTES ABSOLUES DE RÉDACTION :
 
 ① SHOPIFY — Fiche produit qui VEND (pas une liste de caractéristiques) :
    • EXACTEMENT 3 titres magnétiques de page produit.
-   • EXACTEMENT 6 paragraphes.
-   • Chaque paragraphe = 1 titre en gras accrocheur + EXACTEMENT 4 phrases courtes et percutantes.
-   • Style direct et émotionnel. Exemple OBLIGATOIRE à imiter :
-     "Maison intelligente instantanée : Transforme ta maison en un espace moderne en quelques secondes. Trois lampes s'allument dès qu'elles te détectent. Fini les interrupteurs à chercher dans le noir. Tes invités seront bluffés dès l'entrée."
+   • EXACTEMENT 6 sections de paragraphe.
+   • TITRE DE PARAGRAPHE = un BÉNÉFICE CLIENT DIRECT, court et percutant.
+     ❌ INTERDIT : "Découvrez...", "Pourquoi choisir...", "Les avantages de...", "Caractéristiques..."
+     ✅ OBLIGATOIRE : Titre = résultat concret ou bénéfice ressenti. Exemples :
+       "Peau éclatante visible en 2 semaines"
+       "Douleurs soulagées dès la première utilisation"
+       "Maison intelligente instantanée"
+       "Résultats garantis ou remboursé"
+       "Livraison rapide partout en Afrique"
+   • Chaque paragraphe = titre bénéfice + 3 à 4 phrases courtes et percutantes MAX.
+   • Style direct et émotionnel, contexte africain.
+   • EXEMPLE OBLIGATOIRE à imiter (structure) :
+     Titre : "Marche la nuit sans danger"
+     Texte : "Tu te lèves du lit ou montes les escaliers ?\nLes lampes s'allument automatiquement.\nPlus besoin de trébucher dans le noir.\nTa famille est en sécurité à chaque instant."
 
 ② FACEBOOK ADS — 3 variantes complètes :
    • Chaque variante = 1 titre d'offre choc avec emoji (ex: 🔥 PROMO FLASH, ⚠️ STOCK LIMITÉ, 💥 OFFRE EXCLUSIVE).
@@ -1023,27 +1078,48 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
       <span style="background:#D90429;color:white;font-weight:900;padding:3px 12px;border-radius:12px;font-size:0.8rem;">{score}/10</span>
     </div>""", unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab9 = st.tabs([
         "📊 Stratégie", "🎁 Offres", "🛍️ Shopify", "📣 Facebook Ads",
-        "🎙️ Voix-Off", "🎯 Angles", "👤 Avatar",
-        "🎬 Créatives", "🖼️ Images"
+        "🎙️ Scripts & Créatives", "🎯 Angles", "👤 Avatar", "🖼️ Images"
     ])
 
     # ── TAB 1 : STRATÉGIE ────────────────────────────────────────────────────
     with tab1:
+        # Score calculé LABO (5 critères)
+        score_data = calc_score_produit(aprice, apmoy, data)
+        score_calc = score_data["score_final"]
+        score_int  = score_data["score_int"]
+
         c1, c2 = st.columns([1, 2], gap="large")
         with c1:
             badge_html = ("<div class='wow-badge'>⚡ PRODUIT WOW</div>"
                           if type_produit == "wow"
                           else "<div class='ps-badge'>🎯 PROBLÈME-SOLUTION</div>")
             st.markdown(f"""<div class="score-wrap">
-              <div class="score-badge">{score}/10</div>
-              <p style="color:#444;font-size:0.72rem;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">Potentiel marché</p>
+              <div class="score-badge">{score_calc}/10</div>
+              <p style="color:#555;font-size:0.68rem;margin-bottom:0.5rem;text-transform:uppercase;letter-spacing:1px;">Score LABO calculé</p>
               {badge_html}
             </div>""", unsafe_allow_html=True)
         with c2:
+            # Afficher les 5 critères
+            card_title("📊 Score LABO — 5 Critères")
+            for cr in score_data["criteres"]:
+                note = cr["note"]
+                col_note = "#44dd88" if note >= 8 else "#ff9944" if note >= 6 else "#ff4444"
+                st.markdown(
+                    f'''<div style="display:flex;align-items:center;gap:0.7rem;
+                        padding:0.35rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                      <span style="color:{col_note};font-weight:900;font-size:1rem;
+                        min-width:28px;text-align:center;">{note}/10</span>
+                      <div>
+                        <p style="color:#FFF;font-weight:700;font-size:0.82rem;margin:0;">{cr["nom"]}</p>
+                        <p style="color:#555;font-size:0.7rem;margin:0;">{cr["desc"]}</p>
+                      </div>
+                    </div>''',
+                    unsafe_allow_html=True
+                )
             verdict = data.get("score_justification", "")
-            card_title("💡 Verdict IA")
+            card_title("💡 Analyse IA")
             content_block(verdict)
 
         if score < 9:
@@ -1172,12 +1248,14 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
                 card_title(f"📣 Variante {i+1} — {angle}")
                 content_block(full)
 
-    # ── TAB 5 : VOIX-OFF ─────────────────────────────────────────────────────
+    # ── TAB 5 : SCRIPTS & CRÉATIVES ──────────────────────────────────────────
     with tab5:
         type_label = "⚡ PRODUIT WOW" if type_produit == "wow" else "🎯 PROBLÈME-SOLUTION"
+
+        # ── Voix-Off ──
         st.markdown(f"""<div style="border-left:3px solid #D90429;padding:0.4rem 0.8rem;margin-bottom:1rem;">
           <p style="color:#D90429;font-weight:700;margin:0;font-size:0.82rem;">
-            Type : {type_label} · ~130 mots · Copie le script et enregistre ta voix-off
+            🎙️ Scripts Voix-Off — {type_label} · 130 à 170 mots par script
           </p></div>""", unsafe_allow_html=True)
 
         scripts = data.get("scripts", [])
@@ -1186,8 +1264,36 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         for i, script in enumerate(scripts):
             texte_script = script.get("texte_complet", script.get("texte", ""))
             word_count   = len(texte_script.split())
-            card_title(f"🎙️ {script.get('angle', f'Script {i+1}')} · {word_count} mots")
+            wc_color     = "#44dd88" if 125 <= word_count <= 175 else "#ff9944"
+            card_title(f"🎙️ Script {i+1} — {script.get('angle', f'Script {i+1}')}")
+            st.markdown(
+                f'<p style="color:{wc_color};font-size:0.72rem;font-weight:700;margin:0 0 0.3rem;">{word_count} mots</p>',
+                unsafe_allow_html=True
+            )
             content_block(texte_script)
+
+        st.markdown("<hr style='border-color:#2a3140;margin:1.5rem 0;'>", unsafe_allow_html=True)
+
+        # ── Créatives ──
+        st.markdown("""<div style="border-left:3px solid #ff6b35;padding:0.4rem 0.8rem;margin-bottom:1.2rem;">
+          <p style="color:#ff6b35;font-weight:700;margin:0;font-size:0.82rem;">
+            🎬 Concepts Créatives — Facebook & TikTok (à combiner avec les scripts)
+          </p></div>""", unsafe_allow_html=True)
+
+        creatives = data.get("creatives", [])
+        if not creatives:
+            st.warning("⚠️ Créatives non générées. Relance l'analyse.")
+        else:
+            for i, cr in enumerate(creatives):
+                concept    = cr.get("concept",      f"Créative {i+1}")
+                scene      = cr.get("scene",        "")
+                message    = cr.get("message",      "")
+                accroche_t = cr.get("accroche_type","")
+                icons_cr   = ["🔴","🟠","🟡","🟢"]
+                ic = icons_cr[i] if i < len(icons_cr) else "🎬"
+                card_title(f"{ic} Créative {i+1} — {concept}")
+                full_cr = f"Scène / Visuel : {scene}\nMessage principal : {message}\nType d'accroche : {accroche_t}"
+                content_block(full_cr)
 
     # ── TAB 6 : ANGLES MARKETING ─────────────────────────────────────────────
     with tab6:
@@ -1272,52 +1378,15 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
               <p style="color:#FFF;font-size:1rem;font-weight:700;line-height:1.8;margin:0;font-style:italic;">"{msg_cle}"</p>
             </div>""", unsafe_allow_html=True)
 
-    # ── TAB 8 : CRÉATIVES PUBLICITAIRES ─────────────────────────────────────
-    with tab8:
-        st.markdown("""<div style="border-left:3px solid #ff6b35;padding:0.4rem 0.8rem;margin-bottom:1.2rem;">
-          <p style="color:#ff6b35;font-weight:700;margin:0;font-size:0.82rem;">
-            🎬 4 concepts de créatives prêts à produire — Facebook & TikTok
-          </p></div>""", unsafe_allow_html=True)
-
-        creatives = data.get("creatives", [])
-        if not creatives:
-            st.warning("⚠️ Créatives non générées. Relance l'analyse.")
-        else:
-            for i, cr in enumerate(creatives):
-                concept    = cr.get("concept",      f"Créative {i+1}")
-                scene      = cr.get("scene",        "")
-                message    = cr.get("message",      "")
-                accroche_t = cr.get("accroche_type","")
-
-                icons_cr = ["🔴","🟠","🟡","🟢"]
-                ic = icons_cr[i] if i < len(icons_cr) else "🎬"
-                card_title(f"{ic} Créative {i+1} — {concept}")
-
-                st.markdown(f"""<div class="result-card">
-                  <div style="display:grid;gap:0.7rem;">
-                    <div>
-                      <p style="color:#ff6b35;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 0.25rem;">🎬 Scène / Visuel</p>
-                      <p style="color:#FFF;font-size:0.9rem;line-height:1.7;margin:0;">{scene}</p>
-                    </div>
-                    <div>
-                      <p style="color:#ff6b35;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 0.25rem;">💬 Message Principal</p>
-                      <p style="color:#CCC;font-size:0.88rem;line-height:1.7;margin:0;">{message}</p>
-                    </div>
-                    <div>
-                      <p style="color:#ff6b35;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 0.25rem;">⚡ Type d'Accroche</p>
-                      <span style="border:2px solid #ff6b35;color:#ff6b35;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;">{accroche_t}</span>
-                    </div>
-                  </div>
-                </div>""", unsafe_allow_html=True)
-                full_cr = f"CRÉATIVE {i+1} — {concept}\nScène : {scene}\nMessage : {message}\nType d'accroche : {accroche_t}"
-                st.code(full_cr, language=None)
-
-    # ── TAB 9 : IMAGES PRODUIT ────────────────────────────────────────────────
+    # ── TAB 9 : IMAGES PRODUIT — générées et téléchargeables ─────────────────
     with tab9:
-        st.markdown("""<div style="border-left:3px solid #44aaff;padding:0.4rem 0.8rem;margin-bottom:1.2rem;">
+        st.markdown("""<div style="border-left:3px solid #44aaff;padding:0.4rem 0.8rem;margin-bottom:1rem;">
           <p style="color:#44aaff;font-weight:700;margin:0;font-size:0.82rem;">
-            🖼️ 5 types de visuels pour construire ta page de vente Shopify
+            🖼️ 5 images IA haute qualité · 1024×1024 px · Téléchargeables
           </p></div>""", unsafe_allow_html=True)
+        st.markdown("""<p style="color:#555;font-size:0.72rem;margin-bottom:1rem;">
+          Images générées par IA selon ton produit · Clic droit → Enregistrer sur mobile
+        </p>""", unsafe_allow_html=True)
 
         images = data.get("images_produit", [])
         if not images:
@@ -1326,26 +1395,58 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             img_icons  = ["🎥","🤝","🏠","⭐","🔍"]
             img_colors = ["#44aaff","#44dd88","#ff9944","#D90429","#aa44ff"]
 
-            for i, img in enumerate(images):
-                type_img = img.get("type",        f"Type {i+1}")
-                desc     = img.get("description", "")
-                ic   = img_icons[i]  if i < len(img_icons)  else "🖼️"
-                col  = img_colors[i] if i < len(img_colors) else "#888"
+            for row_start in range(0, len(images), 2):
+                row_imgs = images[row_start:row_start+2]
+                grid_cols = st.columns(len(row_imgs), gap="medium")
+                for ci, (gcol, img) in enumerate(zip(grid_cols, row_imgs)):
+                    with gcol:
+                        idx      = row_start + ci
+                        type_img = img.get("type",        f"Type {idx+1}")
+                        desc     = img.get("description", aname)
+                        ic_sym   = img_icons[idx] if idx < len(img_icons) else "🖼️"
+                        ic_col   = img_colors[idx] if idx < len(img_colors) else "#888"
 
-                st.markdown(f"""<div class="result-card" style="border-color:{col}22;">
-                  <div style="display:flex;align-items:flex-start;gap:1rem;">
-                    <div style="width:44px;height:44px;border-radius:50%;border:2px solid {col};
-                         display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
-                      {ic}
-                    </div>
-                    <div style="flex:1;">
-                      <p style="color:{col};font-weight:800;font-size:0.82rem;text-transform:uppercase;
-                           letter-spacing:1.5px;margin:0 0 0.4rem;">{type_img}</p>
-                      <p style="color:#DDD;font-size:0.88rem;line-height:1.8;margin:0;">{desc}</p>
-                    </div>
-                  </div>
-                </div>""", unsafe_allow_html=True)
-                st.code(f"{type_img}\n{desc}", language=None)
+                        # Prompt Pollinations — produit africain, fond blanc, style commercial
+                        prompt_parts = [
+                            "professional product photography",
+                            aname,
+                            desc[:120],
+                            "white background",
+                            "studio lighting",
+                            "photorealistic",
+                            "8k commercial"
+                        ]
+                        prompt_clean = "%20".join(" ".join(prompt_parts).replace(",","").split())
+                        img_url = (
+                            f"https://image.pollinations.ai/prompt/{prompt_clean}"
+                            f"?width=1024&height=1024&nologo=true&seed={idx*17+aname.__hash__()%100}"
+                        )
+
+                        st.markdown(
+                            f'<p style="color:{ic_col};font-weight:800;font-size:0.78rem;'
+                            f'text-transform:uppercase;letter-spacing:1.5px;margin:0 0 0.4rem;">{ic_sym} {type_img}</p>',
+                            unsafe_allow_html=True
+                        )
+                        try:
+                            st.image(img_url, use_column_width=True)
+                        except Exception:
+                            st.markdown(
+                                f'<img src="{img_url}" style="width:100%;border-radius:10px;margin-bottom:0.5rem;" />',
+                                unsafe_allow_html=True
+                            )
+                        st.markdown(
+                            f'<p style="color:#555;font-size:0.7rem;line-height:1.5;margin:0.3rem 0 0.5rem;">{desc}</p>',
+                            unsafe_allow_html=True
+                        )
+                        # Bouton téléchargement (ouvre dans nouvel onglet = download sur mobile)
+                        st.markdown(
+                            f'''<a href="{img_url}" target="_blank">
+                              <button style="width:100%;background:#D90429;color:#fff;border:none;
+                                border-radius:8px;padding:8px 0;font-weight:700;font-size:0.82rem;
+                                cursor:pointer;margin-bottom:1rem;">⬇️ Télécharger</button>
+                            </a>''',
+                            unsafe_allow_html=True
+                        )
 
     # ── EXPORT ───────────────────────────────────────────────────────────────
     st.markdown("---")
@@ -1361,12 +1462,3 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         mime="text/plain",
         use_container_width=True
     )
-
-# ══════════════════════════════════════════════════════════════════
-# CONFIG CLÉ API — STREAMLIT CLOUD
-# ══════════════════════════════════════════════════════════════════
-# 1. share.streamlit.io → "..." sur ton app → Settings → Secrets
-# 2. Colle exactement :
-#    GROQ_API_KEY = "gsk_XXXXXXXXXXXXXXXXXXXXXXXX"
-# 3. Save → Reboot app
-# ══════════════════════════════════════════════════════════════════
