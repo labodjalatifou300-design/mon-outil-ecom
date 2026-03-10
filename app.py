@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 import io
 import re
 import json
@@ -7,7 +8,29 @@ import base64
 from datetime import datetime
 
 # ── INIT SESSION STATE (avant tout) ──────────────────────────────────────────
-if "history"         not in st.session_state: st.session_state["history"]         = []
+# ── HISTORIQUE PERSISTANT — fichier JSON sur disque ──────────────
+HISTORY_FILE = "labo_history.json"
+
+def load_history_file():
+    """Charge l'historique depuis le fichier JSON (survit aux rechargements)."""
+    try:
+        if os.path.exists(HISTORY_FILE):
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return []
+
+def write_history_file(history):
+    """Sauvegarde l'historique dans le fichier JSON."""
+    try:
+        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+if "history"         not in st.session_state:
+    st.session_state["history"]         = load_history_file()  # ← chargé depuis disque
 if "result"          not in st.session_state: st.session_state["result"]          = None
 if "analyzed"        not in st.session_state: st.session_state["analyzed"]        = False
 if "active_product"  not in st.session_state: st.session_state["active_product"]  = ""
@@ -398,11 +421,16 @@ def section_header(title: str) -> str:
 
 def save_to_history(name, score, data, prix_achat):
     entry = {
-        "name": name, "score": score, "data": data,
-        "prix_achat": prix_achat, "ts": datetime.now().strftime("%H:%M")
+        "name":       name,
+        "score":      score,
+        "data":       data,
+        "prix_achat": prix_achat,
+        "ts":         datetime.now().strftime("%d/%m %H:%M")   # date + heure
     }
     existing = [h for h in st.session_state["history"] if h["name"] != name]
-    st.session_state["history"] = [entry] + existing[:7]
+    updated  = [entry] + existing[:19]          # garde 20 analyses max
+    st.session_state["history"] = updated
+    write_history_file(updated)                 # ← sauvegarde sur disque
 
 def get_pub_budget(v):
     if v <= 10:  return "5$–7$/jour"
@@ -476,24 +504,44 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
-    history = st.session_state["history"]   # lecture directe — stable
+    history = st.session_state["history"]   # chargé depuis disque au démarrage
+
     if not history:
         st.markdown(
-            '<p style="color:#333;font-size:0.8rem;font-style:italic;">Aucune analyse</p>',
+            '<p style="color:#444;font-size:0.78rem;font-style:italic;">'
+            '📭 Aucune analyse encore.<br>Lance ta première analyse !</p>',
             unsafe_allow_html=True
         )
     else:
+        # Bouton "Tout effacer"
+        if st.button("🗑️ Effacer l'historique", key="clear_hist"):
+            st.session_state["history"] = []
+            write_history_file([])
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
         for i, h in enumerate(history):
-            short = h["name"][:16] + ("…" if len(h["name"]) > 16 else "")
-            label = f"{'⭐' if i == 0 else '📦'} {short}"
-            help_txt = f"Score {h['score']}/10 · {h.get('ts','')}"
-            if st.button(label, key=f"hist_{i}_{h['name']}", help=help_txt):
+            short    = h["name"][:18] + ("…" if len(h["name"]) > 18 else "")
+            date_str = h.get("ts", "")
+            score_v  = h.get("score", "?")
+            icon     = "⭐" if i == 0 else "📦"
+
+            # Carte cliquable pour chaque entrée historique
+            st.markdown(
+                f'''<div style="background:#161b22;border:1px solid #2a3140;
+                  border-radius:8px;padding:0.5rem 0.75rem;margin-bottom:0.4rem;cursor:pointer;">
+                  <p style="color:#FFF;font-weight:700;margin:0;font-size:0.8rem;">{icon} {short}</p>
+                  <p style="color:#555;font-size:0.65rem;margin:0.2rem 0 0;">
+                    Score {score_v}/10 · {date_str}
+                  </p>
+                </div>''',
+                unsafe_allow_html=True
+            )
+            if st.button(f"↩️ Recharger", key=f"hist_{i}_{h['name'][:8]}"):
                 st.session_state["result"]         = h["data"]
                 st.session_state["analyzed"]       = True
                 st.session_state["active_product"] = h["name"]
                 st.session_state["active_price"]   = h["prix_achat"]
-                # PAS de st.rerun() ici — le clic déclenche déjà un rerun Streamlit.
-                # Un deuxième rerun() efface les widgets et fait disparaître l'historique.
 
     st.markdown("---")
     st.markdown("""<div class="golden-rule">
@@ -537,10 +585,11 @@ with col2:
         accept_multiple_files=True
     )
     if uploaded_files:
-        cols_img = st.columns(len(uploaded_files[:3]))
+        # Thumbnails petits — 80px de large max
+        thumb_cols = st.columns(3)
         for i, f in enumerate(uploaded_files[:3]):
-            with cols_img[i]:
-                st.image(f, use_column_width=True)
+            with thumb_cols[i]:
+                st.image(f, width=80)
 
 price_min = purchase_price + 8000
 price_max = purchase_price + 12000
