@@ -203,8 +203,8 @@ st.markdown("""
 
   /* Boutons sidebar — discrets */
   section[data-testid="stSidebar"] .stButton > button {
-    background: var(--bg2) !important; color: #aaa !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
+    background: transparent !important; color: #aaa !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
     font-weight: 600 !important; font-size: 0.78rem !important;
     padding: 0.4rem 0.7rem !important; animation: none !important;
     letter-spacing: 0 !important; border-radius: 8px !important;
@@ -481,56 +481,6 @@ st.markdown("""
   }
 </style>
 
-// Copier universel — PC, iPhone, Android
-function copyText(text, btnId) {
-  var btn = document.getElementById(btnId);
-  function success() {
-    if (btn) {
-      btn.innerHTML = '✅ Copié !';
-      btn.style.color = '#44dd88';
-      btn.style.borderColor = '#44dd88';
-      btn.style.background = '#001a00';
-      setTimeout(function() {
-        btn.innerHTML = '📋 Copier';
-        btn.style.color = '#888';
-        btn.style.borderColor = '#2a3140';
-        btn.style.background = '#1a1a2a';
-      }, 2500);
-    }
-  }
-  // Méthode 1 : Clipboard API moderne
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(success).catch(fallback);
-  } else {
-    fallback();
-  }
-  // Méthode 2 : fallback textarea (iOS Safari, Android WebView)
-  function fallback() {
-    try {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.setAttribute('readonly', '');
-      ta.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;opacity:0;';
-      document.body.appendChild(ta);
-      if (navigator.userAgent.match(/ipad|iphone/i)) {
-        var range = document.createRange();
-        range.selectNodeContents(ta);
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-        ta.setSelectionRange(0, 999999);
-      } else {
-        ta.select();
-      }
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      success();
-    } catch(e) {
-      if (btn) { btn.innerHTML = '⚠️ Manuel'; }
-    }
-  }
-}
-</script>
 """, unsafe_allow_html=True)
 
 # ── UTILITAIRES ───────────────────────────────────────────────────────────────
@@ -658,7 +608,7 @@ with st.sidebar:
 
             # Carte cliquable pour chaque entrée historique
             st.markdown(
-                f'''<div style="background:#161b22;border:1px solid #2a3140;
+                f'''<div style="border:1px solid rgba(255,255,255,0.08);
                   border-radius:8px;padding:0.5rem 0.75rem;margin-bottom:0.4rem;cursor:pointer;">
                   <p style="color:#FFF;font-weight:700;margin:0;font-size:0.8rem;">{icon} {short}</p>
                   <p style="color:#555;font-size:0.65rem;margin:0.2rem 0 0;">
@@ -957,7 +907,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
 
     # Barre produit actif
     st.markdown(f"""
-    <div style="background:#161b22;border:1px solid #2a3140;border-radius:10px;
+    <div style="border:2px solid rgba(217,4,41,0.3);border-radius:10px;
                 padding:0.6rem 1rem;margin-bottom:1rem;display:flex;align-items:center;
                 gap:0.75rem;flex-wrap:wrap;animation:fadeInDown 0.5s ease both;">
       <span style="color:#D90429;font-size:1.1rem;">📦</span>
@@ -1050,7 +1000,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         mots = data.get("mots_cles", [])
         if mots:
             badges_html = "".join([
-                f'<span style="background:#1a0000;border:1px solid #D90429;color:#FFF;'
+                f'<span style="border:2px solid #D90429;color:#FFF;'
                 f'padding:3px 11px;border-radius:20px;font-size:0.75rem;margin:3px;display:inline-block;">{m}</span>'
                 for m in mots
             ])
