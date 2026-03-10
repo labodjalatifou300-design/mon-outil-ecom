@@ -798,6 +798,17 @@ with p4:
     st.markdown(f'<div class="price-box"><div class="label">📣 Budget Pub</div><div class="value" style="color:#ff9944;font-size:1rem;">{get_pub_budget(objectif_ventes)}</div></div>', unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
+
+# ── Bouton TEST connexion API ─────────────────────────────────────────────
+with st.expander("🔌 Tester la connexion API"):
+    if st.button("🔌 TESTER LA CLÉ OPENROUTER", use_container_width=True):
+        with st.spinner("Test en cours…"):
+            result_test = test_openrouter_connection()
+            if result_test["ok"]:
+                st.success(result_test["msg"])
+            else:
+                st.error(f"❌ {result_test['msg']}")
+
 analyze_clicked = st.button("⚡ LANCER L'ANALYSE IA COMPLÈTE", use_container_width=True)
 
 # ── PROMPT ────────────────────────────────────────────────────────────────────
@@ -1062,12 +1073,10 @@ def repair_json(raw: str) -> dict:
 
 def call_gemini(prompt: str, images: list) -> dict:
     """
-    Appelle OpenRouter avec la librairie requests (plus fiable).
-    Modèles gratuits 2025 vérifiés — fallback automatique.
-    Clé : openrouter.ai → Keys → Create Key
-    Secret : OPENROUTER_API_KEY = "sk-or-v1-..."
+    OpenRouter — format OpenAI standard.
+    Modèles stables gratuits avec fallback automatique.
     """
-    import requests, json as _json
+    import requests
 
     api_key = st.secrets["OPENROUTER_API_KEY"]
     url     = "https://openrouter.ai/api/v1/chat/completions"
@@ -1078,74 +1087,80 @@ def call_gemini(prompt: str, images: list) -> dict:
         "X-Title":       "EcoMaster Labo Pro",
     }
 
-    # ── Modèles gratuits actifs sur OpenRouter (mars 2026) ───────────────
-    # Vision = supporte les images · Text = texte seulement
-    MODELS_VISION = [
-        "google/gemini-2.0-flash-exp:free",      # Gemini vision gratuit
-        "meta-llama/llama-4-scout:free",          # Llama 4 vision
-    ]
-    MODELS_TEXT = [
-        "meta-llama/llama-3.3-70b-instruct:free", # Très bon en français
-        "deepseek/deepseek-r1:free",               # Raisonnement fort
-        "microsoft/phi-4:free",                    # Backup léger
+    # ── Modèles texte gratuits — STABLES sur OpenRouter ──────────────────
+    # Ces modèles ne nécessitent pas de crédits ni de carte bancaire
+    MODELS = [
+        "mistralai/mistral-7b-instruct:free",
+        "meta-llama/llama-3.1-8b-instruct:free",
+        "nousresearch/hermes-3-llama-3.1-405b:free",
+        "mistralai/mistral-nemo:free",
     ]
 
-    # ── Construction contenu vision (images + texte) ─────────────────────
-    vision_content = []
-    for img_data in images:
-        b64 = base64.b64encode(img_data).decode("utf-8")
-        vision_content.append({
-            "type": "image_url",
-            "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
-        })
-    vision_content.append({"type": "text", "text": prompt})
+    # ── On envoie SEULEMENT le texte (les modèles gratuits = texte uniquement) ──
+    # Le nom du produit est déjà dans le prompt, les images = bonus optionnel
+    messages = [{"role": "user", "content": prompt}]
 
-    # ── Contenu texte seulement (fallback si vision indisponible) ─────────
-    text_content = [{"type": "text", "text": prompt}]
+    last_err  = None
+    last_body = None
 
-    last_error = None
-
-    # Essai 1 : modèles vision
-    for model_id in MODELS_VISION:
+    for model_id in MODELS:
         try:
-            resp = requests.post(url, headers=headers, json={
-                "model":       model_id,
-                "messages":    [{"role": "user", "content": vision_content}],
-                "max_tokens":  8000,
-                "temperature": 0.7,
-            }, timeout=90)
-            resp.raise_for_status()
-            data = resp.json()
-            raw = data["choices"][0]["message"]["content"].strip()
-            if raw and len(raw) > 50:
-                return repair_json(raw)
+            resp = requests.post(
+                url, headers=headers,
+                json={
+                    "model":       model_id,
+                    "messages":    messages,
+                    "max_tokens":  8000,
+                    "temperature": 0.7,
+                },
+                timeout=90
+            )
+            last_body = resp.text  # garder pour debug
+            if resp.status_code == 200:
+                data = resp.json()
+                raw  = data["choices"][0]["message"]["content"].strip()
+                if raw and len(raw) > 100:
+                    return repair_json(raw)
+            # 429 = quota, 503 = indispo → essayer suivant
+            # 400/404 = mauvais modèle → essayer suivant
         except Exception as e:
-            last_error = e
-            continue
+            last_err = e
 
-    # Essai 2 : modèles texte (sans images, mais avec le nom du produit dans le prompt)
-    for model_id in MODELS_TEXT:
-        try:
-            resp = requests.post(url, headers=headers, json={
-                "model":       model_id,
-                "messages":    [{"role": "user", "content": text_content}],
-                "max_tokens":  8000,
-                "temperature": 0.7,
-            }, timeout=90)
-            resp.raise_for_status()
-            data = resp.json()
-            raw = data["choices"][0]["message"]["content"].strip()
-            if raw and len(raw) > 50:
-                return repair_json(raw)
-        except Exception as e:
-            last_error = e
-            continue
-
+    # ── Afficher le vrai message d'erreur pour debug ──────────────────────
+    debug_msg = last_body[:500] if last_body else str(last_err)
     raise Exception(
-        f"Tous les modèles ont échoué.\n"
-        f"Vérifie ta clé OPENROUTER_API_KEY dans Streamlit Secrets.\n"
-        f"Dernière erreur : {last_error}"
+        f"OpenRouter : échec sur tous les modèles.\n"
+        f"Réponse serveur : {debug_msg}"
     )
+
+
+def test_openrouter_connection() -> dict:
+    """Test rapide de la connexion OpenRouter."""
+    import requests
+    try:
+        api_key = st.secrets.get("OPENROUTER_API_KEY", "")
+        if not api_key:
+            return {"ok": False, "msg": "Clé OPENROUTER_API_KEY absente des Secrets"}
+
+        resp = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type":  "application/json",
+            },
+            json={
+                "model":    "mistralai/mistral-7b-instruct:free",
+                "messages": [{"role": "user", "content": "Réponds juste OK"}],
+                "max_tokens": 10,
+            },
+            timeout=20
+        )
+        if resp.status_code == 200:
+            return {"ok": True, "msg": f"✅ Connexion OK · modèle: mistral-7b-instruct:free"}
+        else:
+            return {"ok": False, "msg": f"HTTP {resp.status_code} — {resp.text[:300]}"}
+    except Exception as e:
+        return {"ok": False, "msg": str(e)}
 
 # ── LANCEMENT ANALYSE ─────────────────────────────────────────────────────────
 if analyze_clicked:
