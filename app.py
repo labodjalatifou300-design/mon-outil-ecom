@@ -1499,141 +1499,108 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
               <p style="color:#FFF;font-size:1rem;font-weight:700;line-height:1.8;margin:0;font-style:italic;">"{msg_cle}"</p>
             </div>""", unsafe_allow_html=True)
 
-    # ── TAB 9 : IMAGES PRODUIT — Recherche web réelle ────────────────────────
+    # ── TAB 9 : IMAGES PRODUIT — Liens directs multi-sources ───────────────
     with tab9:
-        st.markdown("""<div style="border-left:3px solid #44aaff;padding:0.4rem 0.8rem;margin-bottom:1rem;">
-          <p style="color:#44aaff;font-weight:700;margin:0;font-size:0.82rem;">
-            🖼️ Images réelles du produit — Recherche internet · Téléchargeables
-          </p></div>""", unsafe_allow_html=True)
-        st.markdown("""<p style="color:#555;font-size:0.72rem;margin-bottom:1rem;">
-          Images trouvées sur internet pour ton produit · Clic droit → Enregistrer l'image
-        </p>""", unsafe_allow_html=True)
+        import urllib.parse
 
-        if "img_results" not in st.session_state:
-            st.session_state["img_results"] = []
-        if "img_query_done" not in st.session_state:
-            st.session_state["img_query_done"] = ""
+        st.markdown("""<div style="border-left:3px solid #44aaff;padding:0.4rem 0.8rem;margin-bottom:0.8rem;">
+          <p style="color:#44aaff;font-weight:700;margin:0;font-size:0.82rem;">
+            🖼️ Images réelles du produit — Recherche sur 6 plateformes
+          </p></div>""", unsafe_allow_html=True)
 
         search_query = st.text_input(
-            "🔍 Recherche d'images produit",
+            "✏️ Nom du produit (modifiable)",
             value=aname,
-            placeholder="Ex : lampe détecteur de mouvement rechargeable",
+            placeholder="Ex : Beauty Milk serum",
             key="img_search_query"
         )
 
-        search_btn = st.button("🔍 CHERCHER DES IMAGES RÉELLES", use_container_width=True, key="btn_img_search")
+        # ── Construire les URLs de recherche pour chaque plateforme ──────────
+        q    = urllib.parse.quote_plus(search_query)
+        q_en = urllib.parse.quote_plus(search_query + " product")
 
-        if search_btn or (st.session_state["img_query_done"] != search_query and st.session_state["img_results"]):
-            with st.spinner("🔍 Recherche d'images en cours..."):
-                try:
-                    from duckduckgo_search import DDGS
+        PLATFORMS = [
+            {
+                "nom":    "🔍 Google Images",
+                "url":    f"https://www.google.com/search?q={q_en}&tbm=isch&tbs=isz:l",
+                "desc":   "Photos haute résolution · Filtre par taille",
+                "color":  "#4285F4",
+            },
+            {
+                "nom":    "📌 Pinterest",
+                "url":    f"https://www.pinterest.com/search/pins/?q={q_en}",
+                "desc":   "Visuels lifestyle + mise en scène produit",
+                "color":  "#E60023",
+            },
+            {
+                "nom":    "🛒 AliExpress",
+                "url":    f"https://fr.aliexpress.com/wholesale?SearchText={q}",
+                "desc":   "Photos produit fournisseur · Fond blanc",
+                "color":  "#FF6A00",
+            },
+            {
+                "nom":    "🛍️ Amazon",
+                "url":    f"https://www.amazon.fr/s?k={q}",
+                "desc":   "Photos e-commerce professionnelles",
+                "color":  "#FF9900",
+            },
+            {
+                "nom":    "📸 Unsplash",
+                "url":    f"https://unsplash.com/s/photos/{q_en}",
+                "desc":   "Photos libres de droits · Très haute qualité",
+                "color":  "#44dd88",
+            },
+            {
+                "nom":    "🎨 Freepik",
+                "url":    f"https://www.freepik.com/search?query={q_en}&type=photo",
+                "desc":   "Photos + mockups produit gratuits",
+                "color":  "#1273EB",
+            },
+        ]
 
-                    # ── Recherche DuckDuckGo Images via librairie officielle ──
-                    def search_ddg_images(query: str, max_results: int = 10) -> list:
-                        """
-                        Cherche des images réelles via DuckDuckGo.
-                        Librairie duckduckgo_search — stable, sans API key.
-                        """
-                        results = []
-                        with DDGS() as ddgs:
-                            for item in ddgs.images(
-                                keywords=query + " product photo",
-                                region="wt-wt",
-                                safesearch="moderate",
-                                max_results=max_results
-                            ):
-                                url   = item.get("image",     "")
-                                thumb = item.get("thumbnail", url)
-                                title = item.get("title",     query)[:80]
-                                src   = item.get("url",       "")
-                                if url and url.startswith("http"):
-                                    results.append({
-                                        "url":    url,
-                                        "thumb":  thumb,
-                                        "title":  title,
-                                        "source": src
-                                    })
-                        return results
+        st.markdown("<br>", unsafe_allow_html=True)
 
-                    imgs = search_ddg_images(search_query, max_results=10)
-                    st.session_state["img_results"]    = imgs
-                    st.session_state["img_query_done"] = search_query
+        # ── Grille 2 colonnes ──────────────────────────────────────────────
+        st.markdown(
+            '<p style="color:#555;font-size:0.75rem;margin:0 0 0.8rem;">' +
+            '💡 Clique sur une plateforme → tu arrives directement sur les résultats → ' +
+            'clic droit sur l\'image → <b style="color:#DDD;">Enregistrer l\'image sous</b></p>',
+            unsafe_allow_html=True
+        )
 
-                except Exception as ex:
-                    st.error(f"❌ Erreur recherche : {ex}")
-                    st.session_state["img_results"] = []
+        cols_p = st.columns(2, gap="medium")
+        for i, p in enumerate(PLATFORMS):
+            with cols_p[i % 2]:
+                st.markdown(f"""
+                <a href="{p['url']}" target="_blank" rel="noopener" style="text-decoration:none;">
+                  <div style="border:2px solid {p['color']}44;border-radius:14px;
+                       padding:1rem 1.2rem;margin-bottom:0.8rem;
+                       background:rgba(255,255,255,0.02);
+                       transition:border-color 0.2s;cursor:pointer;">
+                    <p style="color:{p['color']};font-weight:800;font-size:0.92rem;margin:0 0 0.25rem;">
+                      {p['nom']}
+                    </p>
+                    <p style="color:#555;font-size:0.72rem;margin:0;">
+                      {p['desc']}
+                    </p>
+                  </div>
+                </a>""", unsafe_allow_html=True)
 
-        # ── Affichage des résultats ──────────────────────────────────────────
-        imgs_found = st.session_state.get("img_results", [])
-        if imgs_found:
-            st.markdown(
-                f'<p style="color:#44aaff;font-size:0.75rem;font-weight:700;margin:0.5rem 0 1rem;">' +
-                f'✅ {len(imgs_found)} images réelles trouvées · Clique sur ⬇️ pour télécharger</p>',
-                unsafe_allow_html=True
-            )
-            # Grille 3 colonnes (plus compact)
-            row_size = 3
-            for row_start in range(0, len(imgs_found), row_size):
-                row_imgs = imgs_found[row_start:row_start+row_size]
-                gcols = st.columns(len(row_imgs), gap="small")
-                for ci, (gcol, img) in enumerate(zip(gcols, row_imgs)):
-                    with gcol:
-                        idx   = row_start + ci
-                        url   = img["url"]
-                        thumb = img.get("thumb", url)
-                        title = img.get("title", f"Image {idx+1}")[:55]
+        st.markdown("<hr style='border-color:#1a2130;margin:1.2rem 0;'>", unsafe_allow_html=True)
 
-                        # Numéro image
-                        st.markdown(
-                            f'<p style="color:#444;font-size:0.65rem;font-weight:700;margin:0 0 0.3rem;">#{idx+1}</p>',
-                            unsafe_allow_html=True
-                        )
-
-                        # Image thumbnail avec fallback HTML
-                        try:
-                            st.image(thumb, use_column_width=True)
-                        except Exception:
-                            st.markdown(
-                                f'<img src="{thumb}" style="width:100%;border-radius:8px;' +
-                                f'border:1px solid #2a3140;margin-bottom:0.3rem;object-fit:cover;max-height:160px;" />',
-                                unsafe_allow_html=True
-                            )
-
-                        # Titre court
-                        st.markdown(
-                            f'<p style="color:#555;font-size:0.65rem;margin:0.2rem 0 0.4rem;' +
-                            f'line-height:1.4;word-break:break-word;">{title}</p>',
-                            unsafe_allow_html=True
-                        )
-
-                        # Bouton : ouvre image originale haute résolution dans nouvel onglet
-                        st.markdown(
-                            f'<a href="{url}" target="_blank" rel="noopener">' +
-                            f'<button style="width:100%;background:#D90429;color:#fff;' +
-                            f'border:none;border-radius:7px;padding:6px 0;font-weight:700;' +
-                            f'font-size:0.75rem;cursor:pointer;margin-bottom:0.6rem;">' +
-                            f'⬇️ Télécharger</button></a>',
-                            unsafe_allow_html=True
-                        )
-
-        elif st.session_state.get("img_query_done"):
-            st.warning("⚠️ Aucune image trouvée. Essaie un autre terme (ex: en anglais).")
-            st.markdown(
-                '<p style="color:#555;font-size:0.75rem;">💡 Conseil : tape le nom du produit en anglais pour plus de résultats.' +
-                '<br>Ex : "motion sensor lamp" au lieu de "lampe détecteur de mouvement"</p>',
-                unsafe_allow_html=True
-            )
-        else:
-            st.markdown("""<div style="border:1px dashed #2a3140;border-radius:12px;
-                padding:2.5rem;text-align:center;margin-top:1rem;">
-              <p style="font-size:2rem;margin:0 0 0.5rem;">🔍</p>
-              <p style="color:#444;font-size:0.85rem;margin:0 0 0.3rem;font-weight:700;">
-                Recherche des images réelles de ton produit
-              </p>
-              <p style="color:#333;font-size:0.72rem;margin:0;">
-                Jusqu'à 10 photos authentiques · Clique-droit pour enregistrer
-              </p>
-            </div>""", unsafe_allow_html=True)
+        # ── Conseil de recherche contextuel ───────────────────────────────
+        st.markdown(f"""<div style="border:1px solid #2a3140;border-radius:12px;padding:1rem 1.2rem;">
+          <p style="color:#D90429;font-weight:800;font-size:0.82rem;margin:0 0 0.6rem;">
+            💡 Conseils pour trouver les meilleures images de « {search_query} »
+          </p>
+          <p style="color:#888;font-size:0.78rem;line-height:1.8;margin:0;">
+            ① <b style="color:#CCC;">Google Images</b> → filtre « Grande taille » → clic droit → Enregistrer<br>
+            ② <b style="color:#CCC;">AliExpress</b> → ouvre un produit → les photos fournisseur = fond blanc idéal pour Shopify<br>
+            ③ <b style="color:#CCC;">Pinterest</b> → les images lifestyle = parfaites pour Facebook Ads<br>
+            ④ <b style="color:#CCC;">Unsplash</b> → 100% gratuit, libres de droits, haute résolution<br>
+            ⑤ Cherche aussi en <b style="color:#CCC;">anglais</b> pour plus de résultats
+          </p>
+        </div>""", unsafe_allow_html=True)
 
     # ── EXPORT ───────────────────────────────────────────────────────────────
     st.markdown("---")
