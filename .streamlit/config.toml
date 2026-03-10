@@ -1,0 +1,25 @@
+[theme]
+base = "dark"
+backgroundColor = "#0d1117"
+secondaryBackgroundColor = "#161b22"
+textColor = "#F0F0F0"
+primaryColor = "#D90429"
+```
+
+**Étape 5** — Clique **"Commit changes"** → **"Commit directly to main"** → **Commit**
+
+---
+
+## 📸 Visuellement ça ressemble à ça :
+```
+[ .streamlit/config.toml    ]  ← tu tapes ça dans la case nom
+```
+
+Dès que tu tapes le `/`, GitHub crée automatiquement le dossier. Tu n'as pas besoin de créer le dossier séparément.
+
+Après ça, ton repo aura :
+```
+ton-repo/
+├── app.py
+└── .streamlit/
+    └── config.toml   ✅
