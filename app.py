@@ -1062,79 +1062,90 @@ def repair_json(raw: str) -> dict:
 
 def call_gemini(prompt: str, images: list) -> dict:
     """
-    Appelle OpenRouter — agrégateur gratuit (Gemini, Llama, DeepSeek).
-    ✅ 100% gratuit · Pas de quota "limit: 0" · Pas de carte bancaire
-    
-    Clé API : openrouter.ai → Sign Up → Keys → Create Key
-    Secret Streamlit : OPENROUTER_API_KEY = "sk-or-v1-..."
-    
-    Modèles gratuits utilisés (fallback automatique) :
-      1. google/gemini-2.0-flash-exp:free  — meilleur pour le français
-      2. meta-llama/llama-3.3-70b-instruct:free — puissant backup
+    Appelle OpenRouter avec la librairie requests (plus fiable).
+    Modèles gratuits 2025 vérifiés — fallback automatique.
+    Clé : openrouter.ai → Keys → Create Key
+    Secret : OPENROUTER_API_KEY = "sk-or-v1-..."
     """
-    import urllib.request, json as _json
+    import requests, json as _json
 
     api_key = st.secrets["OPENROUTER_API_KEY"]
+    url     = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type":  "application/json",
+        "HTTP-Referer":  "https://streamlit.app",
+        "X-Title":       "EcoMaster Labo Pro",
+    }
 
-    # ── Construction du message multimodal ───────────────────────────────
-    # OpenRouter supporte le format OpenAI vision
-    user_content = []
-
-    # Ajouter les images en base64
-    for img_data in images:
-        b64 = base64.b64encode(img_data).decode("utf-8")
-        user_content.append({
-            "type": "image_url",
-            "image_url": {
-                "url": f"data:image/jpeg;base64,{b64}",
-                "detail": "high"
-            }
-        })
-
-    # Ajouter le prompt texte
-    user_content.append({"type": "text", "text": prompt})
-
-    # ── Liste des modèles gratuits à essayer dans l'ordre ────────────────
-    MODELS = [
-        "google/gemini-2.0-flash-exp:free",
-        "meta-llama/llama-3.3-70b-instruct:free",
-        "google/gemini-flash-1.5-8b:free",
+    # ── Modèles gratuits actifs sur OpenRouter (mars 2026) ───────────────
+    # Vision = supporte les images · Text = texte seulement
+    MODELS_VISION = [
+        "google/gemini-2.0-flash-exp:free",      # Gemini vision gratuit
+        "meta-llama/llama-4-scout:free",          # Llama 4 vision
+    ]
+    MODELS_TEXT = [
+        "meta-llama/llama-3.3-70b-instruct:free", # Très bon en français
+        "deepseek/deepseek-r1:free",               # Raisonnement fort
+        "microsoft/phi-4:free",                    # Backup léger
     ]
 
+    # ── Construction contenu vision (images + texte) ─────────────────────
+    vision_content = []
+    for img_data in images:
+        b64 = base64.b64encode(img_data).decode("utf-8")
+        vision_content.append({
+            "type": "image_url",
+            "image_url": {"url": f"data:image/jpeg;base64,{b64}"}
+        })
+    vision_content.append({"type": "text", "text": prompt})
+
+    # ── Contenu texte seulement (fallback si vision indisponible) ─────────
+    text_content = [{"type": "text", "text": prompt}]
+
     last_error = None
-    for model_id in MODELS:
+
+    # Essai 1 : modèles vision
+    for model_id in MODELS_VISION:
         try:
-            payload = _json.dumps({
-                "model": model_id,
-                "messages": [{"role": "user", "content": user_content}],
-                "max_tokens": 8000,
+            resp = requests.post(url, headers=headers, json={
+                "model":       model_id,
+                "messages":    [{"role": "user", "content": vision_content}],
+                "max_tokens":  8000,
                 "temperature": 0.7,
-            }).encode("utf-8")
-
-            req = urllib.request.Request(
-                "https://openrouter.ai/api/v1/chat/completions",
-                data=payload,
-                headers={
-                    "Authorization":  f"Bearer {api_key}",
-                    "Content-Type":   "application/json",
-                    "HTTP-Referer":   "https://ecomaster-labo-pro.streamlit.app",
-                    "X-Title":        "EcoMaster Labo Pro",
-                }
-            )
-            resp = urllib.request.urlopen(req, timeout=60)
-            result = _json.loads(resp.read().decode("utf-8"))
-
-            # Vérifier que la réponse est valide
-            raw = result["choices"][0]["message"]["content"].strip()
-            if raw:
+            }, timeout=90)
+            resp.raise_for_status()
+            data = resp.json()
+            raw = data["choices"][0]["message"]["content"].strip()
+            if raw and len(raw) > 50:
                 return repair_json(raw)
-
         except Exception as e:
             last_error = e
-            continue   # Essayer le modèle suivant
+            continue
 
-    # Si tous les modèles ont échoué
-    raise Exception(f"Tous les modèles ont échoué. Dernière erreur : {last_error}")
+    # Essai 2 : modèles texte (sans images, mais avec le nom du produit dans le prompt)
+    for model_id in MODELS_TEXT:
+        try:
+            resp = requests.post(url, headers=headers, json={
+                "model":       model_id,
+                "messages":    [{"role": "user", "content": text_content}],
+                "max_tokens":  8000,
+                "temperature": 0.7,
+            }, timeout=90)
+            resp.raise_for_status()
+            data = resp.json()
+            raw = data["choices"][0]["message"]["content"].strip()
+            if raw and len(raw) > 50:
+                return repair_json(raw)
+        except Exception as e:
+            last_error = e
+            continue
+
+    raise Exception(
+        f"Tous les modèles ont échoué.\n"
+        f"Vérifie ta clé OPENROUTER_API_KEY dans Streamlit Secrets.\n"
+        f"Dernière erreur : {last_error}"
+    )
 
 # ── LANCEMENT ANALYSE ─────────────────────────────────────────────────────────
 if analyze_clicked:
