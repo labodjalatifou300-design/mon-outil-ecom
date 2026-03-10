@@ -1062,37 +1062,79 @@ def repair_json(raw: str) -> dict:
 
 def call_gemini(prompt: str, images: list) -> dict:
     """
-    Appelle Google Gemini 1.5 Flash.
-    - Gratuit : 1500 requêtes/jour
-    - Contexte massif → jamais de troncature JSON
-    - Excellente qualité en français africain
+    Appelle OpenRouter — agrégateur gratuit (Gemini, Llama, DeepSeek).
+    ✅ 100% gratuit · Pas de quota "limit: 0" · Pas de carte bancaire
+    
+    Clé API : openrouter.ai → Sign Up → Keys → Create Key
+    Secret Streamlit : OPENROUTER_API_KEY = "sk-or-v1-..."
+    
+    Modèles gratuits utilisés (fallback automatique) :
+      1. google/gemini-2.0-flash-exp:free  — meilleur pour le français
+      2. meta-llama/llama-3.3-70b-instruct:free — puissant backup
     """
-    import google.generativeai as genai
+    import urllib.request, json as _json
 
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel(
-        model_name="gemini-2.0-flash",
-        generation_config={
-            "temperature":      0.7,
-            "top_p":            0.95,
-            "max_output_tokens": 8192,
-        }
-    )
+    api_key = st.secrets["OPENROUTER_API_KEY"]
 
-    # Construire le contenu multimodal (texte + images)
-    parts = []
+    # ── Construction du message multimodal ───────────────────────────────
+    # OpenRouter supporte le format OpenAI vision
+    user_content = []
+
+    # Ajouter les images en base64
     for img_data in images:
-        parts.append({
-            "inline_data": {
-                "mime_type": "image/jpeg",
-                "data":      base64.b64encode(img_data).decode("utf-8")
+        b64 = base64.b64encode(img_data).decode("utf-8")
+        user_content.append({
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:image/jpeg;base64,{b64}",
+                "detail": "high"
             }
         })
-    parts.append(prompt)
 
-    response = model.generate_content(parts)
-    raw = response.text.strip()
-    return repair_json(raw)
+    # Ajouter le prompt texte
+    user_content.append({"type": "text", "text": prompt})
+
+    # ── Liste des modèles gratuits à essayer dans l'ordre ────────────────
+    MODELS = [
+        "google/gemini-2.0-flash-exp:free",
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "google/gemini-flash-1.5-8b:free",
+    ]
+
+    last_error = None
+    for model_id in MODELS:
+        try:
+            payload = _json.dumps({
+                "model": model_id,
+                "messages": [{"role": "user", "content": user_content}],
+                "max_tokens": 8000,
+                "temperature": 0.7,
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                "https://openrouter.ai/api/v1/chat/completions",
+                data=payload,
+                headers={
+                    "Authorization":  f"Bearer {api_key}",
+                    "Content-Type":   "application/json",
+                    "HTTP-Referer":   "https://ecomaster-labo-pro.streamlit.app",
+                    "X-Title":        "EcoMaster Labo Pro",
+                }
+            )
+            resp = urllib.request.urlopen(req, timeout=60)
+            result = _json.loads(resp.read().decode("utf-8"))
+
+            # Vérifier que la réponse est valide
+            raw = result["choices"][0]["message"]["content"].strip()
+            if raw:
+                return repair_json(raw)
+
+        except Exception as e:
+            last_error = e
+            continue   # Essayer le modèle suivant
+
+    # Si tous les modèles ont échoué
+    raise Exception(f"Tous les modèles ont échoué. Dernière erreur : {last_error}")
 
 # ── LANCEMENT ANALYSE ─────────────────────────────────────────────────────────
 if analyze_clicked:
@@ -1102,7 +1144,7 @@ if analyze_clicked:
         st.error("⚠️ Upload au moins une photo du produit.")
     else:
         images_bytes = [f.read() for f in uploaded_files[:3]]
-        with st.spinner("🧠 Gemini analyse ton produit… 15–25 secondes ⏳"):
+        with st.spinner("🧠 IA en cours d'analyse… 20–30 secondes ⏳"):
             try:
                 data = call_gemini(
                     build_prompt(product_name, purchase_price, price_min, price_max),
@@ -1116,9 +1158,15 @@ if analyze_clicked:
                 save_to_history(product_name, data.get("score", "?"), data, purchase_price)
                 st.rerun()
             except Exception as e:
-                st.error(f"❌ Erreur Gemini : {e}")
-                if "GEMINI_API_KEY" in str(e) or "API_KEY" in str(e):
-                    st.warning("⚠️ Clé API manquante. Va dans Streamlit Cloud → Settings → Secrets et ajoute : GEMINI_API_KEY = \"ta_clé\""
+                st.error(f"❌ Erreur IA : {e}")
+                if "OPENROUTER_API_KEY" in str(e) or "API_KEY" in str(e) or "KeyError" in type(e).__name__:
+                    st.info(
+                        "🔑 Clé API manquante.\n\n"
+                        "1. Va sur **openrouter.ai** → Sign Up (gratuit)\n"
+                        "2. Menu **Keys** → Create Key\n"
+                        "3. Copie la clé (commence par sk-or-v1-...)\n"
+                        "4. Streamlit Cloud → Settings → Secrets → ajoute :\n"
+                        "   `OPENROUTER_API_KEY = \"sk-or-v1-...\"` → Save"
                     )
                 st.session_state["analyzed"] = False
 
