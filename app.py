@@ -1071,7 +1071,7 @@ def call_gemini(prompt: str, images: list) -> dict:
 
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name="gemini-2.0-flash",
         generation_config={
             "temperature":      0.7,
             "top_p":            0.95,
@@ -1494,43 +1494,33 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         if search_btn or (st.session_state["img_query_done"] != search_query and st.session_state["img_results"]):
             with st.spinner("🔍 Recherche d'images en cours..."):
                 try:
-                    import urllib.request, urllib.parse, json as _json, re as _re
+                    from duckduckgo_search import DDGS
 
-                    # ── Recherche DuckDuckGo Images (sans API key) ──
+                    # ── Recherche DuckDuckGo Images via librairie officielle ──
                     def search_ddg_images(query: str, max_results: int = 10) -> list:
-                        """Cherche des images via DuckDuckGo — pas de clé API requise."""
-                        q_enc = urllib.parse.quote(query + " product photo")
-
-                        # Étape 1 : obtenir le token vqd
-                        token_url = f"https://duckduckgo.com/?q={q_enc}&iax=images&ia=images"
-                        req = urllib.request.Request(token_url, headers={
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-                        })
-                        html = urllib.request.urlopen(req, timeout=8).read().decode("utf-8", errors="ignore")
-                        vqd_match = _re.search(r"vqd=([\d-]+)", html)
-                        if not vqd_match:
-                            return []
-                        vqd = vqd_match.group(1)
-
-                        # Étape 2 : appel API images
-                        api_url = (
-                            f"https://duckduckgo.com/i.js?l=fr-fr&o=json&q={q_enc}"
-                            f"&vqd={vqd}&f=,,,,,&p=1"
-                        )
-                        req2 = urllib.request.Request(api_url, headers={
-                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                            "Referer": "https://duckduckgo.com/"
-                        })
-                        resp = urllib.request.urlopen(req2, timeout=8).read().decode("utf-8", errors="ignore")
-                        res_json = _json.loads(resp)
+                        """
+                        Cherche des images réelles via DuckDuckGo.
+                        Librairie duckduckgo_search — stable, sans API key.
+                        """
                         results = []
-                        for item in res_json.get("results", [])[:max_results]:
-                            url   = item.get("image", "")
-                            thumb = item.get("thumbnail", url)
-                            title = item.get("title", query)
-                            src   = item.get("url", "")
-                            if url and url.startswith("http"):
-                                results.append({"url": url, "thumb": thumb, "title": title, "source": src})
+                        with DDGS() as ddgs:
+                            for item in ddgs.images(
+                                keywords=query + " product photo",
+                                region="wt-wt",
+                                safesearch="moderate",
+                                max_results=max_results
+                            ):
+                                url   = item.get("image",     "")
+                                thumb = item.get("thumbnail", url)
+                                title = item.get("title",     query)[:80]
+                                src   = item.get("url",       "")
+                                if url and url.startswith("http"):
+                                    results.append({
+                                        "url":    url,
+                                        "thumb":  thumb,
+                                        "title":  title,
+                                        "source": src
+                                    })
                         return results
 
                     imgs = search_ddg_images(search_query, max_results=10)
@@ -1541,53 +1531,76 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
                     st.error(f"❌ Erreur recherche : {ex}")
                     st.session_state["img_results"] = []
 
-        # Affichage des résultats
+        # ── Affichage des résultats ──────────────────────────────────────────
         imgs_found = st.session_state.get("img_results", [])
         if imgs_found:
             st.markdown(
-                f'<p style="color:#44aaff;font-size:0.75rem;font-weight:700;margin:0.5rem 0;">' +
-                f'✅ {len(imgs_found)} images trouvées pour "{st.session_state["img_query_done"]}"</p>',
+                f'<p style="color:#44aaff;font-size:0.75rem;font-weight:700;margin:0.5rem 0 1rem;">' +
+                f'✅ {len(imgs_found)} images réelles trouvées · Clique sur ⬇️ pour télécharger</p>',
                 unsafe_allow_html=True
             )
-            # Grille 2 colonnes
-            for row_start in range(0, len(imgs_found), 2):
-                row_imgs = imgs_found[row_start:row_start+2]
-                gcols = st.columns(len(row_imgs), gap="medium")
+            # Grille 3 colonnes (plus compact)
+            row_size = 3
+            for row_start in range(0, len(imgs_found), row_size):
+                row_imgs = imgs_found[row_start:row_start+row_size]
+                gcols = st.columns(len(row_imgs), gap="small")
                 for ci, (gcol, img) in enumerate(zip(gcols, row_imgs)):
                     with gcol:
                         idx   = row_start + ci
                         url   = img["url"]
                         thumb = img.get("thumb", url)
-                        title = img.get("title", "Image")[:60]
-                        # Afficher l'image (thumbnail pour la rapidité)
+                        title = img.get("title", f"Image {idx+1}")[:55]
+
+                        # Numéro image
+                        st.markdown(
+                            f'<p style="color:#444;font-size:0.65rem;font-weight:700;margin:0 0 0.3rem;">#{idx+1}</p>',
+                            unsafe_allow_html=True
+                        )
+
+                        # Image thumbnail avec fallback HTML
                         try:
                             st.image(thumb, use_column_width=True)
                         except Exception:
                             st.markdown(
-                                f'<img src="{thumb}" style="width:100%;border-radius:10px;' +
-                                f'border:1px solid #2a3140;margin-bottom:0.3rem;" />',
+                                f'<img src="{thumb}" style="width:100%;border-radius:8px;' +
+                                f'border:1px solid #2a3140;margin-bottom:0.3rem;object-fit:cover;max-height:160px;" />',
                                 unsafe_allow_html=True
                             )
+
+                        # Titre court
                         st.markdown(
-                            f'<p style="color:#555;font-size:0.68rem;margin:0.2rem 0 0.4rem;line-height:1.4;">{title}</p>',
+                            f'<p style="color:#555;font-size:0.65rem;margin:0.2rem 0 0.4rem;' +
+                            f'line-height:1.4;word-break:break-word;">{title}</p>',
                             unsafe_allow_html=True
                         )
-                        # Bouton télécharger = ouvre l'image originale en pleine résolution
+
+                        # Bouton : ouvre image originale haute résolution dans nouvel onglet
                         st.markdown(
-                            f'''<a href="{url}" target="_blank">
-                              <button style="width:100%;background:#D90429;color:#fff;border:none;
-                                border-radius:8px;padding:7px 0;font-weight:700;font-size:0.78rem;
-                                cursor:pointer;margin-bottom:0.8rem;">
-                                ⬇️ Télécharger
-                              </button>
-                            </a>''',
+                            f'<a href="{url}" target="_blank" rel="noopener">' +
+                            f'<button style="width:100%;background:#D90429;color:#fff;' +
+                            f'border:none;border-radius:7px;padding:6px 0;font-weight:700;' +
+                            f'font-size:0.75rem;cursor:pointer;margin-bottom:0.6rem;">' +
+                            f'⬇️ Télécharger</button></a>',
                             unsafe_allow_html=True
                         )
+
         elif st.session_state.get("img_query_done"):
-            st.warning("⚠️ Aucune image trouvée. Modifie le terme de recherche.")
+            st.warning("⚠️ Aucune image trouvée. Essaie un autre terme (ex: en anglais).")
+            st.markdown(
+                '<p style="color:#555;font-size:0.75rem;">💡 Conseil : tape le nom du produit en anglais pour plus de résultats.' +
+                '<br>Ex : "motion sensor lamp" au lieu de "lampe détecteur de mouvement"</p>',
+                unsafe_allow_html=True
+            )
         else:
-            st.markdown("""<div style="border:1px dashed #2a3140;border-radius:12px;padding:2rem;text-align:center;margin-top:1rem;">
-              <p style="color:#333;font-size:0.85rem;margin:0;">🔍 Lance une recherche pour trouver des images réelles de ton produit</p>
+            st.markdown("""<div style="border:1px dashed #2a3140;border-radius:12px;
+                padding:2.5rem;text-align:center;margin-top:1rem;">
+              <p style="font-size:2rem;margin:0 0 0.5rem;">🔍</p>
+              <p style="color:#444;font-size:0.85rem;margin:0 0 0.3rem;font-weight:700;">
+                Recherche des images réelles de ton produit
+              </p>
+              <p style="color:#333;font-size:0.72rem;margin:0;">
+                Jusqu'à 10 photos authentiques · Clique-droit pour enregistrer
+              </p>
             </div>""", unsafe_allow_html=True)
 
     # ── EXPORT ───────────────────────────────────────────────────────────────
