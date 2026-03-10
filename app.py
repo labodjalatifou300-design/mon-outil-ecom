@@ -524,57 +524,107 @@ def get_pub_budget(v):
 
 def calc_score_produit(prix_achat: int, prix_vente_moy: float, data: dict) -> dict:
     """
-    Calcule le score produit selon 5 critères LABO :
-    1. Masse de marché potentielle (le produit peut-il toucher beaucoup de monde ?)
-    2. Attractivité du prix (rapport qualité/prix perçu en Afrique)
-    3. Potentiel de créatives / facilité de trouver des vidéos
-    4. Potentiel d'offres commerciales
-    5. Score IA de base (analyse qualitative du produit)
+    ── SCORE LABO ÉLITE — 5 CRITÈRES STRICTS ──
+    Méthode ferme et honnête pour protéger l'investissement publicitaire.
+    RÈGLE : si 2 critères ou plus sont ≤ 4, le score ne peut PAS dépasser 6/10.
+
+    1. Attractivité du Prix — achetable sans réfléchir (revenu 30k-50k FCFA) ?
+    2. Utilité Immédiate & Effet WOW — bénéfice compris en < 3 secondes ?
+    3. Potentiel de Créatives — facile de filmer/trouver des vidéos percutantes ?
+    4. Rareté & Exclusivité — introuvable dans les marchés physiques locaux ?
+    5. Crédibilité & Durabilité — inspire confiance, pas l'air fragile ou douteux ?
     """
-    score_ia = int(data.get("score", 7))
+    score_ia = int(data.get("score", 5))   # Score IA = base de départ (pas le résultat final)
     type_p   = data.get("type_produit", "wow")
+    categ    = data.get("avatar", {}).get("categorie", "Autre")
+    nb_peurs = len(data.get("peurs",  []))
+    nb_des   = len(data.get("desirs", []))
 
-    # Critère 1 — Masse de marché (basé sur catégorie avatar)
-    categ = data.get("avatar", {}).get("categorie", "")
-    masse_map = {
-        "Domestique": 9, "Santé": 9, "Beauté & Soins": 8, "Alimentation": 9,
-        "Tech": 7, "Mode": 7, "Agriculture": 6, "Élevage": 5,
-        "Pêche": 4, "Luxe": 4, "Autre": 6
-    }
-    c1 = masse_map.get(categ, 6)
+    # ── CRITÈRE 1 : ATTRACTIVITÉ DU PRIX ──────────────────────────────────────
+    # Seuil psychologique africain : < 10 000 FCFA = achat impulsif
+    # > 30 000 FCFA = achat réfléchi = difficile à vendre en cold traffic
+    if prix_vente_moy <= 7000:    c1 = 10   # Impulsif, pas de friction
+    elif prix_vente_moy <= 10000: c1 = 9    # Excellent — accessible
+    elif prix_vente_moy <= 15000: c1 = 7    # Bon — possible avec bonne pub
+    elif prix_vente_moy <= 22000: c1 = 5    # Moyen — nécessite argumentation forte
+    elif prix_vente_moy <= 35000: c1 = 3    # Difficile — cible réduite
+    else:                         c1 = 1    # Très risqué — luxe = niche très étroite
+    desc1 = f"Prix de vente {prix_vente_moy:,.0f} FCFA — {'✅ Impulsif' if c1>=9 else '⚠️ Réfléchi' if c1>=6 else '🔴 Trop cher'}"
 
-    # Critère 2 — Prix attractif (fourchette idéale Afrique : 5 000–20 000 FCFA)
-    if prix_vente_moy <= 8000:   c2 = 10
-    elif prix_vente_moy <= 12000: c2 = 9
-    elif prix_vente_moy <= 18000: c2 = 8
-    elif prix_vente_moy <= 25000: c2 = 7
-    elif prix_vente_moy <= 35000: c2 = 5
-    else:                         c2 = 3
+    # ── CRITÈRE 2 : UTILITÉ IMMÉDIATE & EFFET WOW ─────────────────────────────
+    # WOW = se vend à la vue. Problème-solution = douleur quotidienne = fort.
+    # Les deux sont bons mais pour des raisons différentes.
+    if type_p == "wow":
+        c2 = 9   # Effet visuel immédiat = scroll-stop garanti
+        desc2 = "Produit WOW — bénéfice visible en 1 seconde"
+    else:
+        # Évaluer la force de la douleur résolue
+        douleurs_fortes = ["douleur","fatigue","insomnie","sécurité","argent","poids","peau","cheveux","digestion"]
+        desc_produit    = " ".join(data.get("peurs",[]) + data.get("desirs",[])).lower()
+        score_douleur   = sum(1 for d in douleurs_fortes if d in desc_produit)
+        if score_douleur >= 3:   c2 = 9
+        elif score_douleur >= 2: c2 = 7
+        elif score_douleur >= 1: c2 = 5
+        else:                    c2 = 3
+        desc2 = f"Problème-solution · {score_douleur} douleurs quotidiennes identifiées"
 
-    # Critère 3 — Potentiel créatives/vidéos (WOW = facile à filmer)
-    c3 = 9 if type_p == "wow" else 7
+    # ── CRITÈRE 3 : POTENTIEL DE CRÉATIVES ────────────────────────────────────
+    # WOW visuels + catégories facilement filmables = score élevé
+    categ_facile = {"Domestique":9,"Beauté & Soins":9,"Santé":8,"Tech":8,"Mode":7,"Alimentation":7}
+    categ_difficile = {"Agriculture":5,"Élevage":4,"Pêche":4,"Luxe":6}
+    c3_base = categ_facile.get(categ, categ_difficile.get(categ, 6))
+    c3 = min(10, c3_base + (1 if type_p == "wow" else 0))
+    desc3 = f"Catégorie {categ} — {'✅ Facile à filmer' if c3>=8 else '⚠️ Moyennement filmable' if c3>=6 else '🔴 Difficile à démontrer'}"
 
-    # Critère 4 — Potentiel d'offres (peurs + désirs présents = offres faciles)
-    nb_peurs  = len(data.get("peurs",  []))
-    nb_desirs = len(data.get("desirs", []))
-    c4 = min(10, 5 + nb_peurs + nb_desirs)
+    # ── CRITÈRE 4 : RARETÉ & EXCLUSIVITÉ ──────────────────────────────────────
+    # Catégories saturées dans les marchés africains = score bas
+    categories_saturees = {"Mode":4,"Alimentation":3,"Autre":4}
+    categories_rares    = {"Tech":8,"Santé":7,"Beauté & Soins":7,"Luxe":6}
+    c4 = categories_rares.get(categ, categories_saturees.get(categ, 6))
+    # Le score IA aide à affiner
+    if score_ia >= 8: c4 = min(10, c4 + 1)
+    if score_ia <= 4: c4 = max(1, c4 - 2)
+    desc4 = f"{'✅ Rare en marché local' if c4>=7 else '⚠️ Moyennement disponible' if c4>=5 else '🔴 Trouvable partout localement'}"
 
-    # Critère 5 — Score IA base
-    c5 = score_ia
+    # ── CRITÈRE 5 : CRÉDIBILITÉ & DURABILITÉ ──────────────────────────────────
+    # Basé sur le score IA (qualité perçue) + nombre de désirs positifs
+    if score_ia >= 8 and nb_des >= 3:    c5 = 9
+    elif score_ia >= 7:                  c5 = 7
+    elif score_ia >= 5:                  c5 = 5
+    elif score_ia >= 3:                  c5 = 3
+    else:                                c5 = 2
+    desc5 = f"Score IA {score_ia}/10 · {nb_des} désirs identifiés · {'✅ Crédible' if c5>=7 else '⚠️ Mitigé' if c5>=5 else '🔴 Douteux'}"
 
-    # Moyenne pondérée
-    score_final = round((c1*0.25 + c2*0.25 + c3*0.20 + c4*0.15 + c5*0.15), 1)
-    score_final = max(1.0, min(10.0, score_final))
+    # ── CALCUL FINAL AVEC RÈGLE DE RIGUEUR ────────────────────────────────────
+    # Pondération LABO
+    score_brut = (
+        c1 * 0.30 +   # Prix = critère le plus important en Afrique
+        c2 * 0.25 +   # Utilité immédiate
+        c3 * 0.20 +   # Créatives
+        c4 * 0.15 +   # Rareté
+        c5 * 0.10     # Crédibilité
+    )
+
+    # RÈGLE DE RIGUEUR : 2 critères ≤ 4 → plafonner à 6
+    echecs = sum(1 for c in [c1,c2,c3,c4,c5] if c <= 4)
+    if echecs >= 2:
+        score_brut = min(score_brut, 6.0)
+        alerte_rigueur = f"⚠️ {echecs} critères faibles — score plafonné à 6/10"
+    else:
+        alerte_rigueur = None
+
+    score_final = round(max(1.0, min(10.0, score_brut)), 1)
 
     return {
-        "score_final":  score_final,
-        "score_int":    round(score_final),
+        "score_final":     score_final,
+        "score_int":       round(score_final),
+        "alerte_rigueur":  alerte_rigueur,
         "criteres": [
-            {"nom": "Masse de marché",      "note": c1, "desc": f"Catégorie : {categ}"},
-            {"nom": "Attractivité du prix", "note": c2, "desc": f"Prix moy : {prix_vente_moy:,.0f} FCFA"},
-            {"nom": "Potentiel créatives",  "note": c3, "desc": "WOW = facile à filmer" if type_p=="wow" else "Problème-solution"},
-            {"nom": "Potentiel d'offres",   "note": c4, "desc": f"{nb_peurs} peurs + {nb_desirs} désirs identifiés"},
-            {"nom": "Analyse IA",           "note": c5, "desc": "Score qualitatif IA"},
+            {"nom": "💰 Attractivité du Prix",      "note": c1, "desc": desc1,  "poids": "30%"},
+            {"nom": "⚡ Utilité Immédiate & WOW",   "note": c2, "desc": desc2,  "poids": "25%"},
+            {"nom": "🎬 Potentiel de Créatives",    "note": c3, "desc": desc3,  "poids": "20%"},
+            {"nom": "💎 Rareté & Exclusivité",      "note": c4, "desc": desc4,  "poids": "15%"},
+            {"nom": "🛡️ Crédibilité & Durabilité", "note": c5, "desc": desc5,  "poids": "10%"},
         ]
     }
 
@@ -927,7 +977,7 @@ Réponds UNIQUEMENT avec du JSON valide. Aucun texte avant ni après. Aucun comm
   ]
 }}"""
 
-# ── API GROQ ──────────────────────────────────────────────────────────────────
+# ── API GEMINI ────────────────────────────────────────────────────────────────
 def repair_json(raw: str) -> dict:
     """
     Parse JSON robuste :
@@ -1010,20 +1060,38 @@ def repair_json(raw: str) -> dict:
                                 break
         return partial if partial else {}
 
-def call_groq(prompt, images):
-    from groq import Groq
-    client  = Groq(api_key=st.secrets["GROQ_API_KEY"])
-    content = []
-    for img_data in images:
-        b64 = base64.b64encode(img_data).decode("utf-8")
-        content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64}"}})
-    content.append({"type": "text", "text": prompt})
-    response = client.chat.completions.create(
-        model="meta-llama/llama-4-scout-17b-16e-instruct",
-        messages=[{"role": "user", "content": content}],
-        max_tokens=7000,          # ← augmenté pour éviter la troncature du JSON
+def call_gemini(prompt: str, images: list) -> dict:
+    """
+    Appelle Google Gemini 1.5 Flash.
+    - Gratuit : 1500 requêtes/jour
+    - Contexte massif → jamais de troncature JSON
+    - Excellente qualité en français africain
+    """
+    import google.generativeai as genai
+
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    model = genai.GenerativeModel(
+        model_name="gemini-1.5-flash",
+        generation_config={
+            "temperature":      0.7,
+            "top_p":            0.95,
+            "max_output_tokens": 8192,
+        }
     )
-    raw = response.choices[0].message.content.strip()
+
+    # Construire le contenu multimodal (texte + images)
+    parts = []
+    for img_data in images:
+        parts.append({
+            "inline_data": {
+                "mime_type": "image/jpeg",
+                "data":      base64.b64encode(img_data).decode("utf-8")
+            }
+        })
+    parts.append(prompt)
+
+    response = model.generate_content(parts)
+    raw = response.text.strip()
     return repair_json(raw)
 
 # ── LANCEMENT ANALYSE ─────────────────────────────────────────────────────────
@@ -1034,9 +1102,9 @@ if analyze_clicked:
         st.error("⚠️ Upload au moins une photo du produit.")
     else:
         images_bytes = [f.read() for f in uploaded_files[:3]]
-        with st.spinner("🧠 Analyse IA en cours… 15–20 secondes ⏳"):
+        with st.spinner("🧠 Gemini analyse ton produit… 15–25 secondes ⏳"):
             try:
-                data = call_groq(
+                data = call_gemini(
                     build_prompt(product_name, purchase_price, price_min, price_max),
                     images_bytes
                 )
@@ -1048,7 +1116,10 @@ if analyze_clicked:
                 save_to_history(product_name, data.get("score", "?"), data, purchase_price)
                 st.rerun()
             except Exception as e:
-                st.error(f"❌ Erreur IA : {e}")
+                st.error(f"❌ Erreur Gemini : {e}")
+                if "GEMINI_API_KEY" in str(e) or "API_KEY" in str(e):
+                    st.warning("⚠️ Clé API manquante. Va dans Streamlit Cloud → Settings → Secrets et ajoute : GEMINI_API_KEY = \"ta_clé\""
+                    )
                 st.session_state["analyzed"] = False
 
 # ── AFFICHAGE RÉSULTATS ───────────────────────────────────────────────────────
@@ -1101,23 +1172,41 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
               {badge_html}
             </div>""", unsafe_allow_html=True)
         with c2:
-            # Afficher les 5 critères
-            card_title("📊 Score LABO — 5 Critères")
-            for cr in score_data["criteres"]:
-                note = cr["note"]
-                col_note = "#44dd88" if note >= 8 else "#ff9944" if note >= 6 else "#ff4444"
+            card_title("📊 Score LABO ÉLITE — 5 Critères")
+
+            # Alerte rigueur si produit risqué
+            alerte = score_data.get("alerte_rigueur")
+            if alerte:
                 st.markdown(
-                    f'''<div style="display:flex;align-items:center;gap:0.7rem;
-                        padding:0.35rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">
-                      <span style="color:{col_note};font-weight:900;font-size:1rem;
-                        min-width:28px;text-align:center;">{note}/10</span>
-                      <div>
-                        <p style="color:#FFF;font-weight:700;font-size:0.82rem;margin:0;">{cr["nom"]}</p>
-                        <p style="color:#555;font-size:0.7rem;margin:0;">{cr["desc"]}</p>
+                    f'<div style="background:rgba(217,4,41,0.12);border:2px solid #D90429;'
+                    f'border-radius:10px;padding:0.5rem 0.8rem;margin-bottom:0.7rem;">' +
+                    f'<p style="color:#D90429;font-weight:800;font-size:0.8rem;margin:0;">'
+                    f'{alerte}</p></div>',
+                    unsafe_allow_html=True
+                )
+
+            for cr in score_data["criteres"]:
+                note     = cr["note"]
+                poids    = cr.get("poids","")
+                col_note = "#44dd88" if note >= 7 else "#ff9944" if note >= 5 else "#ff4444"
+                bar_w    = int(note * 10)
+                st.markdown(
+                    f'''<div style="padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+                        <span style="color:#FFF;font-weight:700;font-size:0.8rem;">{cr["nom"]}</span>
+                        <span style="color:{col_note};font-weight:900;font-size:0.95rem;">{note}/10
+                          <span style="color:#333;font-size:0.65rem;font-weight:400;"> ·{poids}</span>
+                        </span>
                       </div>
+                      <div style="background:#1a1f2e;border-radius:4px;height:4px;margin-bottom:3px;">
+                        <div style="background:{col_note};width:{bar_w}%;height:4px;border-radius:4px;
+                          transition:width 0.8s ease;"></div>
+                      </div>
+                      <p style="color:#444;font-size:0.68rem;margin:0;">{cr["desc"]}</p>
                     </div>''',
                     unsafe_allow_html=True
                 )
+
             verdict = data.get("score_justification", "")
             card_title("💡 Analyse IA")
             content_block(verdict)
@@ -1378,75 +1467,128 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
               <p style="color:#FFF;font-size:1rem;font-weight:700;line-height:1.8;margin:0;font-style:italic;">"{msg_cle}"</p>
             </div>""", unsafe_allow_html=True)
 
-    # ── TAB 9 : IMAGES PRODUIT — générées et téléchargeables ─────────────────
+    # ── TAB 9 : IMAGES PRODUIT — Recherche web réelle ────────────────────────
     with tab9:
         st.markdown("""<div style="border-left:3px solid #44aaff;padding:0.4rem 0.8rem;margin-bottom:1rem;">
           <p style="color:#44aaff;font-weight:700;margin:0;font-size:0.82rem;">
-            🖼️ 5 images IA haute qualité · 1024×1024 px · Téléchargeables
+            🖼️ Images réelles du produit — Recherche internet · Téléchargeables
           </p></div>""", unsafe_allow_html=True)
         st.markdown("""<p style="color:#555;font-size:0.72rem;margin-bottom:1rem;">
-          Images générées par IA selon ton produit · Clic droit → Enregistrer sur mobile
+          Images trouvées sur internet pour ton produit · Clic droit → Enregistrer l'image
         </p>""", unsafe_allow_html=True)
 
-        images = data.get("images_produit", [])
-        if not images:
-            st.warning("⚠️ Images non générées. Relance l'analyse.")
-        else:
-            img_icons  = ["🎥","🤝","🏠","⭐","🔍"]
-            img_colors = ["#44aaff","#44dd88","#ff9944","#D90429","#aa44ff"]
+        if "img_results" not in st.session_state:
+            st.session_state["img_results"] = []
+        if "img_query_done" not in st.session_state:
+            st.session_state["img_query_done"] = ""
 
-            for row_start in range(0, len(images), 2):
-                row_imgs = images[row_start:row_start+2]
-                grid_cols = st.columns(len(row_imgs), gap="medium")
-                for ci, (gcol, img) in enumerate(zip(grid_cols, row_imgs)):
+        search_query = st.text_input(
+            "🔍 Recherche d'images produit",
+            value=aname,
+            placeholder="Ex : lampe détecteur de mouvement rechargeable",
+            key="img_search_query"
+        )
+
+        search_btn = st.button("🔍 CHERCHER DES IMAGES RÉELLES", use_container_width=True, key="btn_img_search")
+
+        if search_btn or (st.session_state["img_query_done"] != search_query and st.session_state["img_results"]):
+            with st.spinner("🔍 Recherche d'images en cours..."):
+                try:
+                    import urllib.request, urllib.parse, json as _json, re as _re
+
+                    # ── Recherche DuckDuckGo Images (sans API key) ──
+                    def search_ddg_images(query: str, max_results: int = 10) -> list:
+                        """Cherche des images via DuckDuckGo — pas de clé API requise."""
+                        q_enc = urllib.parse.quote(query + " product photo")
+
+                        # Étape 1 : obtenir le token vqd
+                        token_url = f"https://duckduckgo.com/?q={q_enc}&iax=images&ia=images"
+                        req = urllib.request.Request(token_url, headers={
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                        })
+                        html = urllib.request.urlopen(req, timeout=8).read().decode("utf-8", errors="ignore")
+                        vqd_match = _re.search(r"vqd=([\d-]+)", html)
+                        if not vqd_match:
+                            return []
+                        vqd = vqd_match.group(1)
+
+                        # Étape 2 : appel API images
+                        api_url = (
+                            f"https://duckduckgo.com/i.js?l=fr-fr&o=json&q={q_enc}"
+                            f"&vqd={vqd}&f=,,,,,&p=1"
+                        )
+                        req2 = urllib.request.Request(api_url, headers={
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                            "Referer": "https://duckduckgo.com/"
+                        })
+                        resp = urllib.request.urlopen(req2, timeout=8).read().decode("utf-8", errors="ignore")
+                        res_json = _json.loads(resp)
+                        results = []
+                        for item in res_json.get("results", [])[:max_results]:
+                            url   = item.get("image", "")
+                            thumb = item.get("thumbnail", url)
+                            title = item.get("title", query)
+                            src   = item.get("url", "")
+                            if url and url.startswith("http"):
+                                results.append({"url": url, "thumb": thumb, "title": title, "source": src})
+                        return results
+
+                    imgs = search_ddg_images(search_query, max_results=10)
+                    st.session_state["img_results"]    = imgs
+                    st.session_state["img_query_done"] = search_query
+
+                except Exception as ex:
+                    st.error(f"❌ Erreur recherche : {ex}")
+                    st.session_state["img_results"] = []
+
+        # Affichage des résultats
+        imgs_found = st.session_state.get("img_results", [])
+        if imgs_found:
+            st.markdown(
+                f'<p style="color:#44aaff;font-size:0.75rem;font-weight:700;margin:0.5rem 0;">' +
+                f'✅ {len(imgs_found)} images trouvées pour "{st.session_state["img_query_done"]}"</p>',
+                unsafe_allow_html=True
+            )
+            # Grille 2 colonnes
+            for row_start in range(0, len(imgs_found), 2):
+                row_imgs = imgs_found[row_start:row_start+2]
+                gcols = st.columns(len(row_imgs), gap="medium")
+                for ci, (gcol, img) in enumerate(zip(gcols, row_imgs)):
                     with gcol:
-                        idx      = row_start + ci
-                        type_img = img.get("type",        f"Type {idx+1}")
-                        desc     = img.get("description", aname)
-                        ic_sym   = img_icons[idx] if idx < len(img_icons) else "🖼️"
-                        ic_col   = img_colors[idx] if idx < len(img_colors) else "#888"
-
-                        # Prompt Pollinations — produit africain, fond blanc, style commercial
-                        prompt_parts = [
-                            "professional product photography",
-                            aname,
-                            desc[:120],
-                            "white background",
-                            "studio lighting",
-                            "photorealistic",
-                            "8k commercial"
-                        ]
-                        prompt_clean = "%20".join(" ".join(prompt_parts).replace(",","").split())
-                        img_url = (
-                            f"https://image.pollinations.ai/prompt/{prompt_clean}"
-                            f"?width=1024&height=1024&nologo=true&seed={idx*17+aname.__hash__()%100}"
-                        )
-
-                        st.markdown(
-                            f'<p style="color:{ic_col};font-weight:800;font-size:0.78rem;'
-                            f'text-transform:uppercase;letter-spacing:1.5px;margin:0 0 0.4rem;">{ic_sym} {type_img}</p>',
-                            unsafe_allow_html=True
-                        )
+                        idx   = row_start + ci
+                        url   = img["url"]
+                        thumb = img.get("thumb", url)
+                        title = img.get("title", "Image")[:60]
+                        # Afficher l'image (thumbnail pour la rapidité)
                         try:
-                            st.image(img_url, use_column_width=True)
+                            st.image(thumb, use_column_width=True)
                         except Exception:
                             st.markdown(
-                                f'<img src="{img_url}" style="width:100%;border-radius:10px;margin-bottom:0.5rem;" />',
+                                f'<img src="{thumb}" style="width:100%;border-radius:10px;' +
+                                f'border:1px solid #2a3140;margin-bottom:0.3rem;" />',
                                 unsafe_allow_html=True
                             )
                         st.markdown(
-                            f'<p style="color:#555;font-size:0.7rem;line-height:1.5;margin:0.3rem 0 0.5rem;">{desc}</p>',
+                            f'<p style="color:#555;font-size:0.68rem;margin:0.2rem 0 0.4rem;line-height:1.4;">{title}</p>',
                             unsafe_allow_html=True
                         )
-                        # Bouton téléchargement (ouvre dans nouvel onglet = download sur mobile)
+                        # Bouton télécharger = ouvre l'image originale en pleine résolution
                         st.markdown(
-                            f'''<a href="{img_url}" target="_blank">
+                            f'''<a href="{url}" target="_blank">
                               <button style="width:100%;background:#D90429;color:#fff;border:none;
-                                border-radius:8px;padding:8px 0;font-weight:700;font-size:0.82rem;
-                                cursor:pointer;margin-bottom:1rem;">⬇️ Télécharger</button>
+                                border-radius:8px;padding:7px 0;font-weight:700;font-size:0.78rem;
+                                cursor:pointer;margin-bottom:0.8rem;">
+                                ⬇️ Télécharger
+                              </button>
                             </a>''',
                             unsafe_allow_html=True
                         )
+        elif st.session_state.get("img_query_done"):
+            st.warning("⚠️ Aucune image trouvée. Modifie le terme de recherche.")
+        else:
+            st.markdown("""<div style="border:1px dashed #2a3140;border-radius:12px;padding:2rem;text-align:center;margin-top:1rem;">
+              <p style="color:#333;font-size:0.85rem;margin:0;">🔍 Lance une recherche pour trouver des images réelles de ton produit</p>
+            </div>""", unsafe_allow_html=True)
 
     # ── EXPORT ───────────────────────────────────────────────────────────────
     st.markdown("---")
