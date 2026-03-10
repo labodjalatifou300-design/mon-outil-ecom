@@ -487,13 +487,25 @@ st.markdown("""
 
 def card_title(title: str):
     """Titre rouge premium avec ligne décorative."""
+    st.markdown(f'<div class="section-label">{title}</div>', unsafe_allow_html=True)
+
+def content_block(text: str, border_color: str = "#2a3140"):
+    """
+    Affiche le texte en bloc visuel aéré (multilignes, paragraphes)
+    + bouton copier natif Streamlit en dessous.
+    Respecte les \n — chaque retour à la ligne est préservé.
+    """
+    # Convertir \n en <br> pour affichage HTML propre
+    html_text = str(text).replace("\n", "<br>")
     st.markdown(
-        f'<div class="section-label">{title}</div>',
+        f'''<div style="border:1px solid {border_color};border-radius:12px;
+            padding:1rem 1.2rem;margin-bottom:0.4rem;line-height:1.95;
+            color:#DDD;font-size:0.88rem;font-family:'Space Grotesk',sans-serif;">
+            {html_text}
+        </div>''',
         unsafe_allow_html=True
     )
-
-def copy_block(text: str):
-    """Affiche le texte en multilignes lisibles + bouton copie natif Streamlit."""
+    # Bouton copier natif (fonctionne PC + mobile)
     st.code(text, language=None)
 
 # section_header gardé pour compatibilité avec le HTML des cartes visuelles (score, tableau, etc.)
@@ -722,28 +734,43 @@ CONTRAINTES ABSOLUES DE RÉDACTION :
    • Exemple OBLIGATOIRE à imiter :
      "💡 Rends ta maison intelligente avec moins de 10 000 francs ! Avec seulement 8 000 francs, tu reçois 3 lampes intelligentes qui s'allument automatiquement. Plus besoin de chercher l'interrupteur la nuit. Commande maintenant et fais-toi livrer gratuitement !"
 
-③ SCRIPTS VOIX-OFF — 3 scripts INDÉPENDANTS, CHAQUE SCRIPT DOIT FAIRE EXACTEMENT 130 MOTS (ni plus ni moins) :
-   • COMPTE LES MOTS avant de répondre. 130 mots = environ 8 à 10 phrases. Ce n'est PAS 130 mots au total pour les 3 scripts. C'est 130 mots PAR script individuel.
+③ SCRIPTS VOIX-OFF — 3 scripts INDÉPENDANTS de 130 à 170 MOTS CHACUN :
+   • RÈGLE ABSOLUE : chaque script individuel = entre 130 et 170 mots. PAS 130 mots pour les 3 scripts réunis.
+   • MISE EN FORME OBLIGATOIRE : utilise \n pour séparer les phrases courtes. Maximum 1-2 phrases par ligne. Le texte DOIT être aéré, pas un bloc continu.
    • Texte fluide et naturel, SANS balises techniques (pas de "Hook:", "CTA:", "Act 1:", etc.).
-   • Si type WOW   → Hook visuel choc → Problème rapide (1-2 phrases) → Solution visuelle → Preuve sociale locale (ex: "M. Kofi de Lomé a testé et validé...") → CTA urgent.
-   • Si type P-S   → Hook douleur/frustration → Amplification frustration → Ta Solution précise → Témoignage local (ex: "Mme Aminata d'Abidjan ne jure que par ça...") → CTA.
-   • Exemple de ton attendu (130 mots) : "Tu veux vraiment arrêter la cigarette ou tu attends qu'elle détruise ton souffle ? Chaque cigarette t'enchaîne un peu plus..."
+   • Utilise des noms africains réalistes : Kofi, Amina, Moussa, Fatou, Kwame, Aminata, Adama…
+   • Si type WOW   → Hook visuel choc → Problème rapide → Solution visuelle → Preuve sociale locale → CTA urgent.
+   • Si type P-S   → Hook douleur → Amplification → Solution précise → Témoignage local → CTA.
+   • EXEMPLE de format attendu avec retours à la ligne :
+     "8 personnes sur 10 se lèvent la nuit dans le noir.\nEt le plus étonnant, c'est qu'elles pensent que c'est normal.\nNormal de chercher l'interrupteur,\nnormal d'avancer à tâtons.\nMaintenant regarde ce qui se passe quand je pose le pied au sol.\nLa lumière s'allume toute seule.\nSans réfléchir. Sans rien appuyer.\nKofi à Lomé utilise ce système depuis 3 semaines.\nIl dit qu'il ne pourrait plus s'en passer.\nL'offre est disponible maintenant, mais les stocks sont limités.\nClique sur le lien et commande aujourd'hui."
 
-④ ANGLES MARKETING — 5 angles différents et percutants :
-   • Chaque angle = un titre court + une phrase d'accroche d'attaque directe.
-   • Angles possibles : Peur/urgence, Désir/aspiration, Preuve sociale, Curiosité/mystère, Transformation.
-   • Adapté au marché africain francophone (Togo, Sénégal, Côte d'Ivoire, Bénin).
+④ FACEBOOK ADS — 3 variantes complètes :
+   • Chaque variante = 1 titre d'offre choc avec emoji.
+   • MISE EN FORME : le texte doit utiliser \n entre chaque ligne. Maximum 5 lignes.
+   • Utilise des emojis, un ton fun et émotionnel, contexte africain.
 
-⑤ AVATAR CLIENT — Persona ultra-détaillé :
-   • Sexe : homme / femme / les deux.
-   • Tranche d'âge précise (ex: 25–40 ans).
-   • Niveau de français : soutenu / familier / mixte.
-   • Catégorie produit : Luxe / Domestique / Agriculture / Élevage / Pêche / Beauté & Soins / Santé / Tech / Mode / Alimentation / Autre.
-   • Situation : profession, revenu mensuel estimé, ville type, mode de vie.
-   • Frustrations profondes (3 points).
-   • Désirs secrets (3 points).
-   • Objections à l'achat (3 points).
+⑤ ANGLES MARKETING — 5 angles différents et percutants :
+   • Chaque angle = un titre court + une phrase d'accroche directe.
+   • Adapté au marché africain francophone.
+
+⑥ AVATAR CLIENT — Persona ultra-détaillé selon la méthode LABO :
+   • Sexe, tranche d'âge précise, niveau de français (soutenu / familier / mixte).
+   • Catégorie : Luxe / Domestique / Agriculture / Élevage / Pêche / Beauté & Soins / Santé / Tech / Mode / Alimentation / Autre.
+   • Situation : profession, revenu mensuel estimé en FCFA, ville type, mode de vie.
+   • Frustrations profondes (3), Désirs secrets (3), Objections à l'achat (3).
    • Message clé qui le convainc immédiatement.
+
+⑦ CRÉATIVES PUBLICITAIRES — 4 concepts créatifs :
+   • Chaque créative = concept + type de scène/visuel + message principal + type d'accroche.
+   • Inspiré des formats qui fonctionnent sur Facebook/TikTok en Afrique.
+
+⑧ IMAGES PRODUIT — 5 types de visuels pour la page de vente :
+   • Démonstration du produit en action.
+   • Utilisation réelle (mains/personne avec le produit).
+   • Lifestyle (produit dans un environnement de vie africain réel).
+   • Mise en avant d'un avantage clé.
+   • Gros plan sur les détails/qualité du produit.
+   • Pour chaque type : description précise du visuel à créer/commander.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -800,16 +827,49 @@ Réponds UNIQUEMENT avec du JSON valide. Aucun texte avant ni après. Aucun comm
     "age": "25–40 ans",
     "francais": "familier",
     "categorie": "Domestique",
-    "prenom_type": "Prénom africain typique",
+    "prenom_type": "Kofi, Amina ou autre prénom africain",
     "ville": "Lomé, Abidjan, Dakar ou similaire",
-    "profession": "Profession précise",
-    "revenu": "Revenu mensuel estimé en FCFA",
-    "mode_vie": "Description courte du quotidien",
-    "frustrations": ["frustration 1", "frustration 2", "frustration 3"],
-    "desirs": ["désir 1", "désir 2", "désir 3"],
-    "objections": ["objection 1", "objection 2", "objection 3"],
-    "message_cle": "La phrase exacte qui le/la convainc d'acheter immédiatement"
-  }}
+    "profession": "Profession précise avec contexte africain",
+    "revenu": "80 000–120 000 FCFA/mois",
+    "mode_vie": "Description du quotidien en 2 phrases, contexte africain",
+    "frustrations": ["frustration précise 1", "frustration précise 2", "frustration précise 3"],
+    "desirs": ["désir concret 1", "désir concret 2", "désir concret 3"],
+    "objections": ["objection réelle 1", "objection réelle 2", "objection réelle 3"],
+    "message_cle": "La phrase exacte (1 ligne max) qui le/la convainc d'acheter immédiatement"
+  }},
+  "creatives": [
+    {{
+      "concept": "Nom court du concept créatif",
+      "scene": "Description précise de la scène ou du visuel à filmer/créer",
+      "message": "Le message marketing principal de cette créative",
+      "accroche_type": "Statistique / Problème / WOW / Témoignage / Interdiction"
+    }},
+    {{
+      "concept": "Concept 2",
+      "scene": "Scène 2",
+      "message": "Message 2",
+      "accroche_type": "Type d'accroche 2"
+    }},
+    {{
+      "concept": "Concept 3",
+      "scene": "Scène 3",
+      "message": "Message 3",
+      "accroche_type": "Type d'accroche 3"
+    }},
+    {{
+      "concept": "Concept 4",
+      "scene": "Scène 4",
+      "message": "Message 4",
+      "accroche_type": "Type d'accroche 4"
+    }}
+  ],
+  "images_produit": [
+    {{"type": "Démonstration", "description": "Description précise du visuel démonstration à créer"}},
+    {{"type": "Utilisation",   "description": "Description précise : personne utilisant le produit, contexte africain"}},
+    {{"type": "Lifestyle",     "description": "Description de la scène lifestyle dans un foyer ou environnement africain réel"}},
+    {{"type": "Avantage Clé",  "description": "Visuel mettant en avant l'avantage principal avec texte ou annotation"}},
+    {{"type": "Gros Plan",     "description": "Gros plan sur la qualité, les détails ou la finition du produit"}}
+  ]
 }}"""
 
 # ── API GROQ ──────────────────────────────────────────────────────────────────
@@ -870,7 +930,7 @@ def repair_json(raw: str) -> dict:
         partial = {}
         for key in ["score","score_justification","type_produit","ameliorations",
                     "public_cible","peurs","desirs","mots_cles","offres",
-                    "shopify","facebook_ads","scripts","angles_marketing","avatar"]:
+                    "shopify","facebook_ads","scripts","angles_marketing","avatar","creatives","images_produit"]:
             pattern = rf'"{key}"\s*:\s*'
             m = re.search(pattern, raw)
             if m:
@@ -963,9 +1023,10 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
       <span style="background:#D90429;color:white;font-weight:900;padding:3px 12px;border-radius:12px;font-size:0.8rem;">{score}/10</span>
     </div>""", unsafe_allow_html=True)
 
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
         "📊 Stratégie", "🎁 Offres", "🛍️ Shopify", "📣 Facebook Ads",
-        "🎙️ Voix-Off", "🎯 Angles", "👤 Avatar"
+        "🎙️ Voix-Off", "🎯 Angles", "👤 Avatar",
+        "🎬 Créatives", "🖼️ Images"
     ])
 
     # ── TAB 1 : STRATÉGIE ────────────────────────────────────────────────────
@@ -983,13 +1044,13 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         with c2:
             verdict = data.get("score_justification", "")
             card_title("💡 Verdict IA")
-            st.code(verdict, language=None)
+            content_block(verdict)
 
         if score < 9:
             amelios = data.get("ameliorations", [])
             amelios_txt = "\n".join([f"- {a}" for a in amelios])
             card_title("⚠️ Comment Booster ce Produit ?")
-            st.code(amelios_txt, language=None)
+            content_block(amelios_txt)
 
         st.markdown(f"""<div style="display:flex;gap:0.45rem;flex-wrap:wrap;margin:1rem 0;">
           <div class="metric-item"><div class="m-label">Budget Pub</div><div class="m-value red">{get_pub_budget(aventes)}</div></div>
@@ -1031,15 +1092,15 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         with cp_col:
             peurs = data.get("peurs", [])
             card_title("😰 Peurs du Client")
-            st.code("\n".join([f"🔴 {p}" for p in peurs]), language=None)
+            content_block("\n".join([f"🔴 {p}" for p in peurs]))
         with cd_col:
             desirs = data.get("desirs", [])
             card_title("✨ Désirs du Client")
-            st.code("\n".join([f"💚 {d}" for d in desirs]), language=None)
+            content_block("\n".join([f"💚 {d}" for d in desirs]))
 
         public = data.get("public_cible", "")
         card_title("🎯 Public Cible")
-        st.code(public, language=None)
+        content_block(public)
 
         mots = data.get("mots_cles", [])
         if mots:
@@ -1050,7 +1111,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             ])
             card_title("🔍 Mots-Clés")
             st.markdown(f'<div style="margin-bottom:0.5rem;">{badges_html}</div>', unsafe_allow_html=True)
-            st.code(" · ".join(mots), language=None)
+            st.code(" · ".join(mots), language=None)  # gardé st.code pour copie one-liner
 
     # ── TAB 2 : OFFRES ───────────────────────────────────────────────────────
     with tab2:
@@ -1065,7 +1126,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
         for i, o in enumerate(offres_list):
             offre_txt = f"{o.get('nom','')}\nDescription : {o.get('description','')}\nPrix : {o.get('prix_suggere','')}\nArgument : {o.get('argument','')}"
             card_title(f"🎁 Offre {i+1} — {o.get('nom','')}")
-            st.code(offre_txt, language=None)
+            content_block(offre_txt)
 
     # ── TAB 3 : SHOPIFY ──────────────────────────────────────────────────────
     with tab3:
@@ -1075,21 +1136,21 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
 
         card_title("🏷️ 3 Titres Magnétiques — choisissez le meilleur")
         for i, t in enumerate(titres):
-            st.code(f"Option {i+1} [{t.get('angle','')}]\n{t.get('titre','')}", language=None)
+            content_block(f"Option {i+1} [{t.get('angle','')}]\n{t.get('titre','')}")
 
         st.markdown("<hr style='border-color:#2a3140;margin:1.2rem 0;'>", unsafe_allow_html=True)
 
         card_title("📝 Fiche Produit Shopify — 6 Paragraphes (4 phrases max)")
         for j, para in enumerate(paras):
             bloc = f"{para.get('titre','')}\n\n{para.get('texte','')}"
-            st.code(bloc, language=None)
+            content_block(bloc, border_color="#D90429" if j==0 else "#2a3140")
 
         # Copier tout d'un coup
         all_paras_txt = "\n\n".join([
             f"{p.get('titre','')}\n{p.get('texte','')}" for p in paras
         ])
         card_title("📦 Copier la fiche complète (6 paragraphes)")
-        st.code(all_paras_txt, language=None)
+        content_block(all_paras_txt)
 
     # ── TAB 4 : FACEBOOK ADS ─────────────────────────────────────────────────
     with tab4:
@@ -1109,7 +1170,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
                 angle    = ad.get("angle", f"Variante {i+1}")
                 full     = f"{accroche}\n\n{texte}"
                 card_title(f"📣 Variante {i+1} — {angle}")
-                st.code(full, language=None)
+                content_block(full)
 
     # ── TAB 5 : VOIX-OFF ─────────────────────────────────────────────────────
     with tab5:
@@ -1126,7 +1187,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             texte_script = script.get("texte_complet", script.get("texte", ""))
             word_count   = len(texte_script.split())
             card_title(f"🎙️ {script.get('angle', f'Script {i+1}')} · {word_count} mots")
-            st.code(texte_script, language=None)
+            content_block(texte_script)
 
     # ── TAB 6 : ANGLES MARKETING ─────────────────────────────────────────────
     with tab6:
@@ -1150,7 +1211,7 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
                   <p class="ad-accroche">{titre}</p>
                   <p class="ad-texte">{accroche}</p>
                 </div>""", unsafe_allow_html=True)
-                st.code(f"{titre}\n\n{accroche}", language=None)
+                content_block(f"{titre}\n\n{accroche}")
 
     # ── TAB 7 : AVATAR CLIENT ─────────────────────────────────────────────────
     with tab7:
@@ -1210,6 +1271,81 @@ if st.session_state.get("analyzed") and st.session_state.get("result"):
             st.markdown(f"""<div style="border:2px solid #D90429;border-radius:14px;padding:1.2rem 1.4rem;margin-top:0.5rem;">
               <p style="color:#FFF;font-size:1rem;font-weight:700;line-height:1.8;margin:0;font-style:italic;">"{msg_cle}"</p>
             </div>""", unsafe_allow_html=True)
+
+    # ── TAB 8 : CRÉATIVES PUBLICITAIRES ─────────────────────────────────────
+    with tab8:
+        st.markdown("""<div style="border-left:3px solid #ff6b35;padding:0.4rem 0.8rem;margin-bottom:1.2rem;">
+          <p style="color:#ff6b35;font-weight:700;margin:0;font-size:0.82rem;">
+            🎬 4 concepts de créatives prêts à produire — Facebook & TikTok
+          </p></div>""", unsafe_allow_html=True)
+
+        creatives = data.get("creatives", [])
+        if not creatives:
+            st.warning("⚠️ Créatives non générées. Relance l'analyse.")
+        else:
+            for i, cr in enumerate(creatives):
+                concept    = cr.get("concept",      f"Créative {i+1}")
+                scene      = cr.get("scene",        "")
+                message    = cr.get("message",      "")
+                accroche_t = cr.get("accroche_type","")
+
+                icons_cr = ["🔴","🟠","🟡","🟢"]
+                ic = icons_cr[i] if i < len(icons_cr) else "🎬"
+                card_title(f"{ic} Créative {i+1} — {concept}")
+
+                st.markdown(f"""<div class="result-card">
+                  <div style="display:grid;gap:0.7rem;">
+                    <div>
+                      <p style="color:#ff6b35;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 0.25rem;">🎬 Scène / Visuel</p>
+                      <p style="color:#FFF;font-size:0.9rem;line-height:1.7;margin:0;">{scene}</p>
+                    </div>
+                    <div>
+                      <p style="color:#ff6b35;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 0.25rem;">💬 Message Principal</p>
+                      <p style="color:#CCC;font-size:0.88rem;line-height:1.7;margin:0;">{message}</p>
+                    </div>
+                    <div>
+                      <p style="color:#ff6b35;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 0.25rem;">⚡ Type d'Accroche</p>
+                      <span style="border:2px solid #ff6b35;color:#ff6b35;padding:3px 12px;border-radius:20px;font-size:0.8rem;font-weight:700;">{accroche_t}</span>
+                    </div>
+                  </div>
+                </div>""", unsafe_allow_html=True)
+                full_cr = f"CRÉATIVE {i+1} — {concept}\nScène : {scene}\nMessage : {message}\nType d'accroche : {accroche_t}"
+                st.code(full_cr, language=None)
+
+    # ── TAB 9 : IMAGES PRODUIT ────────────────────────────────────────────────
+    with tab9:
+        st.markdown("""<div style="border-left:3px solid #44aaff;padding:0.4rem 0.8rem;margin-bottom:1.2rem;">
+          <p style="color:#44aaff;font-weight:700;margin:0;font-size:0.82rem;">
+            🖼️ 5 types de visuels pour construire ta page de vente Shopify
+          </p></div>""", unsafe_allow_html=True)
+
+        images = data.get("images_produit", [])
+        if not images:
+            st.warning("⚠️ Images non générées. Relance l'analyse.")
+        else:
+            img_icons  = ["🎥","🤝","🏠","⭐","🔍"]
+            img_colors = ["#44aaff","#44dd88","#ff9944","#D90429","#aa44ff"]
+
+            for i, img in enumerate(images):
+                type_img = img.get("type",        f"Type {i+1}")
+                desc     = img.get("description", "")
+                ic   = img_icons[i]  if i < len(img_icons)  else "🖼️"
+                col  = img_colors[i] if i < len(img_colors) else "#888"
+
+                st.markdown(f"""<div class="result-card" style="border-color:{col}22;">
+                  <div style="display:flex;align-items:flex-start;gap:1rem;">
+                    <div style="width:44px;height:44px;border-radius:50%;border:2px solid {col};
+                         display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                      {ic}
+                    </div>
+                    <div style="flex:1;">
+                      <p style="color:{col};font-weight:800;font-size:0.82rem;text-transform:uppercase;
+                           letter-spacing:1.5px;margin:0 0 0.4rem;">{type_img}</p>
+                      <p style="color:#DDD;font-size:0.88rem;line-height:1.8;margin:0;">{desc}</p>
+                    </div>
+                  </div>
+                </div>""", unsafe_allow_html=True)
+                st.code(f"{type_img}\n{desc}", language=None)
 
     # ── EXPORT ───────────────────────────────────────────────────────────────
     st.markdown("---")
