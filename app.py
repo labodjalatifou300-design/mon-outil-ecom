@@ -145,22 +145,25 @@ label{color:var(--smoke)!important;font-size:.78rem!important;letter-spacing:.5p
 .phrase-text{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:600;font-style:italic;line-height:1.65;}
 
 /* ── BUBBLES ── */
-.bub-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.6rem;margin-top:.6rem;}
+.bub-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.7rem;margin-top:.7rem;}
 @media(max-width:900px){.bub-grid{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:550px){.bub-grid{grid-template-columns:repeat(2,1fr);}}
-.bub{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.85rem .5rem;border-radius:14px;text-decoration:none;text-align:center;transition:all .3s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.09);min-height:72px;gap:.32rem;position:relative;overflow:hidden;}
+.bub{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1rem .6rem;border-radius:14px;text-decoration:none;text-align:center;transition:all .3s cubic-bezier(.34,1.56,.64,1);border:1px solid rgba(255,255,255,.09);min-height:90px;gap:.45rem;position:relative;overflow:hidden;}
 .bub::after{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s;background:linear-gradient(135deg,rgba(255,255,255,.07),transparent);}
 .bub:hover{transform:translateY(-5px) scale(1.06);box-shadow:0 12px 35px rgba(0,0,0,.4);}
 .bub:hover::after{opacity:1;}
-.bub-ico{font-size:1.4rem;}
-.bub-lbl{font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;letter-spacing:.3px;}
+.bub-ico{font-size:2rem;}
+.bub-lbl{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.3px;}
 
 /* ── THUMBNAILS ── */
-.thumb-grid{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:.5rem;}
-.thumb{display:flex;flex-direction:column;align-items:center;gap:.25rem;}
-.thumb img{width:90px;height:90px;object-fit:cover;border-radius:12px;border:1px solid var(--bord);transition:transform .2s,box-shadow .2s;}
-.thumb img:hover{transform:scale(1.1);box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.thumb a{font-size:.62rem;color:var(--smoke);text-decoration:none;}
+.thumb-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.8rem;margin-top:.8rem;}
+@media(max-width:900px){.thumb-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:550px){.thumb-grid{grid-template-columns:repeat(2,1fr);}}
+.thumb{display:flex;flex-direction:column;align-items:center;gap:.35rem;background:var(--s2);border:1px solid var(--bord);border-radius:14px;padding:.6rem;transition:all .25s;}
+.thumb:hover{border-color:rgba(255,45,85,.35);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.thumb img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;transition:transform .2s;}
+.thumb img:hover{transform:scale(1.04);}
+.thumb a{font-size:.65rem;color:var(--smoke);text-decoration:none;font-weight:600;letter-spacing:.5px;}
 .thumb a:hover{color:var(--red);}
 
 /* ── MISC ── */
@@ -191,25 +194,29 @@ label{color:var(--smoke)!important;font-size:.78rem!important;letter-spacing:.5p
 """, unsafe_allow_html=True)
 
 # ── COPY SCRIPT ─────────────────────────────────────
+
 COPY_JS = """
 <script>
 function copyText(id){
   var el=document.getElementById(id);
   if(!el)return;
-  var txt=el.innerText||el.textContent;
+  var txt=el.innerText||el.textContent||"";
   var btn=document.getElementById('btn_'+id);
-  navigator.clipboard.writeText(txt).then(function(){
-    btn.innerText='✅';btn.style.background='#32d4a4';btn.style.borderColor='#32d4a4';
-    setTimeout(function(){btn.innerText='📋';btn.style.background='';btn.style.borderColor='';},2000);
-  }).catch(function(){
-    var ta=document.createElement('textarea');ta.value=txt;
-    ta.style.position='fixed';ta.style.opacity='0';
-    document.body.appendChild(ta);ta.select();
-    try{document.execCommand('copy');}catch(e){}
-    document.body.removeChild(ta);
-    btn.innerText='✅';
-    setTimeout(function(){btn.innerText='📋';},2000);
-  });
+  function success(){
+    if(btn){btn.innerText='✅';btn.style.background='#32d4a4';btn.style.borderColor='#32d4a4';}
+    setTimeout(function(){if(btn){btn.innerText='📋';btn.style.background='';btn.style.borderColor='';}},2500);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(success).catch(function(){fallback(txt,success);});
+  } else { fallback(txt,success); }
+}
+function fallback(txt,cb){
+  var ta=document.createElement('textarea');
+  ta.value=txt;ta.setAttribute('readonly','');
+  ta.style.cssText='position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+  document.body.appendChild(ta);ta.focus();ta.select();
+  try{document.execCommand('copy');cb();}catch(e){}
+  document.body.removeChild(ta);
 }
 </script>
 """
@@ -395,21 +402,23 @@ Retourne UNIQUEMENT ce JSON:
 
         # SHOPIFY
         bar.progress(36, "🛍️ Shopify…")
-        raw = groq_call(f"""Crée du contenu Shopify pour '{pname}'.
+        raw = groq_call(f"""Crée du contenu Shopify COMPLET pour '{pname}'.
 RÈGLES ABSOLUES:
-1. Les titres de paragraphes = PROMESSES DE RÉSULTAT concrètes de '{pname}' (PAS: Présentation, Avantages, Caractéristiques, Description)
-2. Chaque texte de paragraphe = 4 phrases maximum, bien séparées par des sauts de ligne
-3. Tout parle UNIQUEMENT de '{pname}' et de ses bénéfices réels
-Retourne UNIQUEMENT ce JSON:
+1. Tu DOIS générer EXACTEMENT 3 titres SEO différents et EXACTEMENT 6 paragraphes.
+2. Chaque titre = une promesse de résultat CONCRÈTE de '{pname}' (PAS: Présentation, Avantages, Caractéristiques)
+3. Chaque paragraphe = exactement 4 phrases bien développées (pas des phrases courtes d'une ligne)
+4. Tout parle UNIQUEMENT de '{pname}' et de ses bénéfices réels
+5. NE PAS s'arrêter avant les 6 paragraphes complets
+Retourne UNIQUEMENT ce JSON (complet jusqu'au paragraphe 6):
 {{"titres":["Titre SEO 1 promesse de {pname}","Titre SEO 2 résultat de {pname}","Titre SEO 3 transformation de {pname}"],
 "paragraphes":[
-  {{"titre":"Promesse résultat 1 de {pname}","texte":"Phrase 1 sur le bénéfice de {pname}.\n\nPhrase 2 développant ce bénéfice.\n\nPhrase 3 avec exemple concret.\n\nPhrase 4 appelant à l'action."}},
-  {{"titre":"Promesse 2","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
-  {{"titre":"Promesse 3","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
-  {{"titre":"Promesse 4","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
-  {{"titre":"Promesse 5","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
-  {{"titre":"Promesse 6","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}}
-]}}""", SYS, 2500)
+  {{"titre":"Promesse résultat 1 de {pname}","texte":"Phrase 1 bénéfice principal de {pname}.\n\nPhrase 2 développant ce bénéfice avec détails concrets.\n\nPhrase 3 avec exemple africain concret.\n\nPhrase 4 appelant à l'action."}},
+  {{"titre":"Promesse 2 concrète de {pname}","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
+  {{"titre":"Promesse 3 concrète","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
+  {{"titre":"Promesse 4 concrète","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
+  {{"titre":"Promesse 5 concrète","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}},
+  {{"titre":"Promesse 6 concrète","texte":"Phrase 1.\n\nPhrase 2.\n\nPhrase 3.\n\nPhrase 4."}}
+]}}""", SYS, 3500)
         st.session_state.res["shopify"] = parse_json(raw)
         if not st.session_state.res["shopify"]:
             st.session_state.res["shopify"] = {"titres":[f"{pname} — La solution","Résultats rapides avec {pname}","Transformez votre quotidien"],"paragraphes":[{"titre":f"Ce que {pname} change dans votre vie","texte":"Ce produit résout un problème réel.\n\nDes milliers de clients satisfaits en Afrique.\n\nRésultats visibles rapidement.\n\nCommandez maintenant."}]}
@@ -664,18 +673,17 @@ with tabs[4]:
             b3 = str(ad.get("b3","")).strip()
             mots = ad.get("mots","~")
             if accroche:
-                st.markdown(f'<div class="tag" style="margin-top:.9rem;">Texte #{i} — {mots} mots</div>', unsafe_allow_html=True)
-                st.markdown(f"""<div class="adcard">
-                  <div class="adcard-hook">🔥 {accroche}</div>
-                  {"<div class='adcard-pip'>"+b1+"</div>" if b1 else ""}
-                  {"<div class='adcard-pip'>"+b2+"</div>" if b2 else ""}
-                  {"<div class='adcard-pip'>"+b3+"</div>" if b3 else ""}
-                </div>""", unsafe_allow_html=True)
-                full_text = f"{accroche}"
-                if b1: full_text += f"\n\n- {b1}"
-                if b2: full_text += f"\n- {b2}"
-                if b3: full_text += f"\n- {b3}"
-                copy_block(full_text, "Copier ce texte")
+                st.markdown(f'<div class="tag" style="margin-top:.9rem;">✏️ Texte #{i} — {mots} mots</div>', unsafe_allow_html=True)
+                pips = ""
+                if b1: pips += f"<div class='adcard-pip'>• {b1}</div>"
+                if b2: pips += f"<div class='adcard-pip'>• {b2}</div>"
+                if b3: pips += f"<div class='adcard-pip'>• {b3}</div>"
+                st.markdown(f'<div class="adcard"><div class="adcard-hook">🔥 {accroche}</div>{pips}</div>', unsafe_allow_html=True)
+                lines = [accroche]
+                if b1: lines.append(f"• {b1}")
+                if b2: lines.append(f"• {b2}")
+                if b3: lines.append(f"• {b3}")
+                copy_block("\n".join(lines), "")
         st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.warning("Textes Facebook non générés — relancez l'analyse.")
@@ -696,9 +704,19 @@ with tabs[5]:
     st.markdown('</div>', unsafe_allow_html=True)
 
     if scripts:
+        # Dédoublonnage : on retire les scripts avec le même début de texte
+        seen = set()
+        unique_scripts = []
+        for s in scripts:
+            txt = str(s.get("texte","")).strip()
+            key = txt[:60].lower()
+            if key and key not in seen:
+                seen.add(key)
+                unique_scripts.append(s)
+
         st.markdown('<div class="panel">', unsafe_allow_html=True)
         st.markdown(f'<div class="pt-title">🎙️ Scripts voix off — {PN}</div>', unsafe_allow_html=True)
-        for i, s in enumerate(scripts, 1):
+        for i, s in enumerate(unique_scripts, 1):
             txt = str(s.get("texte","")).strip()
             mots = s.get("mots", len(txt.split()))
             if txt:
