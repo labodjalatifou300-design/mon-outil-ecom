@@ -1,14 +1,15 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import requests, json, re, base64, urllib.parse
 
 st.set_page_config(page_title="E-Commerce Master Labo Pro", page_icon="⚡", layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap');
 *,*::before,*::after{box-sizing:border-box;}
 :root{--ink:#080810;--s1:#0f0f1a;--s2:#16162a;--s3:#1e1e35;--red:#ff2d55;--amber:#ff9f0a;--teal:#32d4a4;--smoke:#9999bb;--white:#f0f0fa;--bord:rgba(255,255,255,.07);}
-html,body,[class*="css"]{font-family:'DM Sans',sans-serif!important;background:var(--ink)!important;color:var(--white)!important;}
+html,body,[class*="css"]{font-family:'Inter',sans-serif!important;background:var(--ink)!important;color:var(--white)!important;font-size:15px!important;}
 #MainMenu,footer,header{visibility:hidden;}
 section[data-testid="stSidebar"]{display:none!important;}
 .block-container{padding:0 1.2rem 4rem!important;max-width:1400px!important;}
@@ -156,38 +157,37 @@ label{color:var(--smoke)!important;font-size:.78rem!important;letter-spacing:.5p
 .bub-lbl{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;letter-spacing:.3px;}
 
 /* ── THUMBNAILS ── */
-.thumb-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.8rem;margin-top:.8rem;}
-@media(max-width:900px){.thumb-grid{grid-template-columns:repeat(3,1fr);}}
-@media(max-width:550px){.thumb-grid{grid-template-columns:repeat(2,1fr);}}
-.thumb{display:flex;flex-direction:column;align-items:center;gap:.35rem;background:var(--s2);border:1px solid var(--bord);border-radius:14px;padding:.6rem;transition:all .25s;}
-.thumb:hover{border-color:rgba(255,45,85,.35);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.thumb img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;transition:transform .2s;}
-.thumb img:hover{transform:scale(1.04);}
-.thumb a{font-size:.65rem;color:var(--smoke);text-decoration:none;font-weight:600;letter-spacing:.5px;}
+.thumb-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;margin-top:.7rem;}
+@media(max-width:1000px){.thumb-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:600px){.thumb-grid{grid-template-columns:repeat(3,1fr);}}
+.thumb{display:flex;flex-direction:column;align-items:center;gap:.25rem;background:var(--s2);border:1px solid var(--bord);border-radius:10px;padding:.4rem;transition:all .2s;}
+.thumb:hover{border-color:rgba(255,45,85,.4);transform:translateY(-2px);box-shadow:0 5px 16px rgba(0,0,0,.4);}
+.thumb img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;}
+.thumb a{font-size:.58rem;color:var(--smoke);text-decoration:none;font-weight:600;}
 .thumb a:hover{color:var(--red);}
 
 /* ── MISC ── */
 .fbud{text-align:center;padding:1.2rem;}
 .fbud-num{font-family:'Syne',sans-serif;font-size:3.5rem;font-weight:800;line-height:1;}
-.fbud-sub{color:var(--smoke);font-size:.82rem;margin-top:.3rem;}
-.tip{background:rgba(255,159,10,.07);border:1px solid rgba(255,159,10,.18);border-radius:10px;padding:.8rem 1rem;font-size:.83rem;color:var(--smoke);line-height:1.7;margin-top:.8rem;}
+.fbud-sub{color:var(--smoke);font-size:.86rem;margin-top:.3rem;}
+.tip{background:rgba(255,159,10,.07);border:1px solid rgba(255,159,10,.18);border-radius:10px;padding:.8rem 1rem;font-size:.86rem;color:var(--smoke);line-height:1.7;margin-top:.8rem;}
 .tip b{color:var(--amber);}
 .hdiv{height:1px;background:var(--bord);margin:1.1rem 0;}
-.tag{font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--smoke);margin-bottom:.2rem;}
+.tag{font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--smoke);margin-bottom:.2rem;}
 
 /* welcome */
 .welcome{text-align:center;padding:4.5rem 2rem;}
 .welcome-icon{font-size:4rem;display:inline-block;animation:bounce 2s ease-in-out infinite;}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 .welcome-title{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--red);margin:.8rem 0;}
-.welcome-sub{color:var(--smoke);font-size:.9rem;max-width:500px;margin:0 auto;line-height:1.7;}
+.welcome-sub{color:var(--smoke);font-size:.95rem;max-width:500px;margin:0 auto;line-height:1.7;}
 .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:2rem;}
 @media(max-width:700px){.feat-grid{grid-template-columns:1fr 1fr;}}
 .feat{background:var(--s1);border:1px solid var(--bord);border-radius:14px;padding:1.1rem;text-align:center;transition:all .25s;}
 .feat:hover{border-color:rgba(255,45,85,.35);transform:translateY(-3px);}
 .feat-e{font-size:1.8rem;margin-bottom:.4rem;}
-.feat-t{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--amber);margin-bottom:.25rem;}
-.feat-d{font-size:.77rem;color:var(--smoke);line-height:1.5;}
+.feat-t{font-family:'Syne',sans-serif;font-weight:700;font-size:.92rem;color:var(--amber);margin-bottom:.25rem;}
+.feat-d{font-size:.82rem;color:var(--smoke);line-height:1.5;}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--ink)}::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px}
 </style>
@@ -195,45 +195,42 @@ label{color:var(--smoke)!important;font-size:.78rem!important;letter-spacing:.5p
 
 # ── COPY SCRIPT ─────────────────────────────────────
 
-COPY_JS = """
-<script>
-function copyText(id){
-  var el=document.getElementById(id);
-  if(!el)return;
-  var txt=el.innerText||el.textContent||"";
-  var btn=document.getElementById('btn_'+id);
-  function success(){
-    if(btn){btn.innerText='✅';btn.style.background='#32d4a4';btn.style.borderColor='#32d4a4';}
-    setTimeout(function(){if(btn){btn.innerText='📋';btn.style.background='';btn.style.borderColor='';}},2500);
-  }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(txt).then(success).catch(function(){fallback(txt,success);});
-  } else { fallback(txt,success); }
-}
-function fallback(txt,cb){
-  var ta=document.createElement('textarea');
-  ta.value=txt;ta.setAttribute('readonly','');
-  ta.style.cssText='position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
-  document.body.appendChild(ta);ta.focus();ta.select();
-  try{document.execCommand('copy');cb();}catch(e){}
-  document.body.removeChild(ta);
-}
-</script>
-"""
-st.markdown(COPY_JS, unsafe_allow_html=True)
+COPY_JS = ""  # kept for compatibility, actual copy uses components below
 
 _copy_counter = [0]
 def copy_block(text, label=""):
     _copy_counter[0] += 1
     uid = f"cb_{_copy_counter[0]}"
-    safe = str(text).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+    safe = str(text).replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace('"','&quot;')
     if label:
         st.markdown(f'<div class="tag">{label}</div>', unsafe_allow_html=True)
-    st.markdown(f"""
-<div class="cblock">
-  <div class="ctext" id="{uid}">{safe}</div>
-  <div class="cico" id="btn_{uid}" onclick="copyText('{uid}')" title="Copier">📋</div>
-</div>""", unsafe_allow_html=True)
+    # Display the text block
+    st.markdown(f'<div class="ctext" id="{uid}" style="background:var(--s2);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:.9rem 1rem;font-size:.88rem;line-height:1.75;white-space:pre-wrap;word-break:break-word;margin:.4rem 0 .2rem;">{safe}</div>', unsafe_allow_html=True)
+    # Use components.html for the copy button — this runs in its own iframe with clipboard access
+    raw_text = str(text).replace('`','\\`').replace('\\','\\\\').replace('\r','')
+    components.html(f"""
+<button onclick="(function(){{
+  var t=`{raw_text}`;
+  var b=document.getElementById('copybtn');
+  if(navigator.clipboard){{
+    navigator.clipboard.writeText(t).then(function(){{
+      b.innerText='✅ Copié!';b.style.background='#32d4a4';b.style.borderColor='#32d4a4';b.style.color='#000';
+      setTimeout(function(){{b.innerText='📋 Copier';b.style.background='';b.style.borderColor='';b.style.color='';}},2500);
+    }}).catch(function(){{fallback(t,b);}});
+  }}else{{fallback(t,b);}}
+  function fallback(txt,btn){{
+    var ta=document.createElement('textarea');ta.value=txt;
+    ta.style.cssText='position:fixed;top:0;left:0;width:2em;height:2em;opacity:0;';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{{document.execCommand('copy');btn.innerText='✅ Copié!';btn.style.background='#32d4a4';btn.style.color='#000';
+      setTimeout(function(){{btn.innerText='📋 Copier';btn.style.background='';btn.style.color='';}},2500);
+    }}catch(e){{btn.innerText='❌ Erreur';}}
+    document.body.removeChild(ta);
+  }}
+}})()" id="copybtn" style="background:transparent;border:1px solid rgba(255,255,255,.15);color:#9999bb;border-radius:8px;padding:5px 16px;font-size:.78rem;font-family:Syne,sans-serif;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s;width:100%;margin-top:2px;">📋 Copier</button>
+<style>body{{margin:0;background:transparent;}}</style>
+""", height=38)
+
 
 def make_bubs(items):
     # items = (label, url, color, bg, icon)
@@ -330,14 +327,15 @@ if st.session_state.form_open:
     if uploaded:
         if len(uploaded) > 10: uploaded = uploaded[:10]; st.warning("Max 10 images.")
         st.session_state.pimages = uploaded
-        st.markdown('<div class="thumb-grid">', unsafe_allow_html=True)
+        html_thumbs = '<div class="thumb-grid">'
         for img in uploaded:
             img.seek(0)
             b64 = base64.b64encode(img.read()).decode()
             ext = img.name.split(".")[-1]
-            st.markdown(f'<div class="thumb"><img src="data:image/{ext};base64,{b64}"><a href="data:image/{ext};base64,{b64}" download="{img.name}">⬇ DL</a></div>', unsafe_allow_html=True)
+            html_thumbs += f'<div class="thumb"><img src="data:image/{ext};base64,{b64}"><a href="data:image/{ext};base64,{b64}" download="{img.name}">⬇ DL</a></div>'
             img.seek(0)
-        st.markdown('</div>', unsafe_allow_html=True)
+        html_thumbs += '</div>'
+        st.markdown(html_thumbs, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     _, bc, _ = st.columns([1,2,1])
@@ -439,19 +437,21 @@ Retourne UNIQUEMENT ce JSON:
 
         # VOIX OFF
         bar.progress(63, "🎙️ Voix off…")
-        raw = groq_call(f"""3 scripts voix off pour '{pname}', marché africain francophone.
-RÈGLE ABSOLUE: chaque script = exactement 120 à 140 mots. Parle UNIQUEMENT de '{pname}'.
-Structure obligatoire de chaque script:
+        raw = groq_call(f"""3 scripts voix off TOTALEMENT DIFFÉRENTS pour '{pname}', marché africain francophone.
+RÈGLES ABSOLUES:
+1. Chaque script = exactement 120 à 140 mots. Parle UNIQUEMENT de '{pname}'.
+2. Les 3 scripts DOIVENT être complètement différents: angles différents, prénoms différents, problèmes différents
+3. INTERDIT de répéter le même début, la même structure ou le même texte entre scripts
+Structure de chaque script:
 [PROBLÈME] 2-3 phrases sur le problème vécu par le client
 [SOLUTION] Présente '{pname}' comme la solution
 [FONCTIONNEMENT] 2-3 phrases sur comment {pname} agit concrètement
-[TÉMOIGNAGE] 2-3 phrases avec prénom africain réaliste (Aminata, Kofi, Fatou, Ibrahim, Moussa, Aïssatou, Seydou, Mariam, Oumar, Binta)
-Neuromarketing: émotions fortes, urgence, identification.
+[TÉMOIGNAGE] 2-3 phrases avec prénom africain DIFFÉRENT pour chaque script
 Retourne UNIQUEMENT ce JSON:
 {{"scripts":[
-  {{"texte":"[Script 1 de 120-140 mots ici, spécifique à {pname}]","mots":125}},
-  {{"texte":"[Script 2 different du 1er]","mots":132}},
-  {{"texte":"[Script 3 different des deux autres]","mots":128}}
+  {{"texte":"[Script 1 — angle problème A, prénom Aminata]","mots":125}},
+  {{"texte":"[Script 2 — angle problème B DIFFÉRENT, prénom Kofi — texte DIFFÉRENT du script 1]","mots":132}},
+  {{"texte":"[Script 3 — angle problème C DIFFÉRENT, prénom Fatou — texte DIFFÉRENT des scripts 1 et 2]","mots":128}}
 ]}}""", SYS, 3000)
         st.session_state.res["voix"] = parse_json(raw)
         if not st.session_state.res["voix"]:
@@ -787,16 +787,15 @@ with tabs[6]:
 # ══ TAB 8 : IMAGES ═══════════════════════════════════
 with tabs[7]:
     if st.session_state.pimages:
-        st.markdown('<div class="panel">', unsafe_allow_html=True)
-        st.markdown('<div class="pt-title">📷 Vos photos uploadées</div>', unsafe_allow_html=True)
-        st.markdown('<div class="thumb-grid">', unsafe_allow_html=True)
+        html_imgs = '<div class="panel"><div class="pt-title">📷 Vos photos uploadées</div><div class="thumb-grid">'
         for img in st.session_state.pimages:
             img.seek(0)
             b64 = base64.b64encode(img.read()).decode()
             ext = img.name.split(".")[-1]
-            st.markdown(f'<div class="thumb"><img src="data:image/{ext};base64,{b64}"><a href="data:image/{ext};base64,{b64}" download="{img.name}">⬇ DL</a></div>', unsafe_allow_html=True)
+            html_imgs += f'<div class="thumb"><img src="data:image/{ext};base64,{b64}"><a href="data:image/{ext};base64,{b64}" download="{img.name}">⬇ DL</a></div>'
             img.seek(0)
-        st.markdown('</div></div>', unsafe_allow_html=True)
+        html_imgs += '</div></div>'
+        st.markdown(html_imgs, unsafe_allow_html=True)
 
     st.markdown('<div class="panel">', unsafe_allow_html=True)
     st.markdown('<div class="pt-title">🔍 Rechercher des images de votre produit</div>', unsafe_allow_html=True)
